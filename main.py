@@ -7,8 +7,8 @@ from telethon import TelegramClient, functions
 from telethon.tl.types import User, KeyboardButtonCallback
 
 # إعداد المتغيرات البيئية
-os.environ['API_ID'] = '25575241'  # استبدل بالقيمة الفعلية لـ API_ID
-os.environ['API_HASH'] = '716e1f714c9b35e50d05fe38bc723a1c'  # استبدل بالقيمة الفعلية لـ API_HASH
+os.environ['API_ID'] = 'api_id'  # استبدل بالقيمة الفعلية لـ API_ID
+os.environ['API_HASH'] = 'api_hash'  # استبدل بالقيمة الفعلية لـ API_HASH
 
 # قراءة بيانات الاعتماد من المتغيرات البيئية
 api_id = os.getenv('API_ID')
