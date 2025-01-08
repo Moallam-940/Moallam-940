@@ -45,8 +45,8 @@ async def handle_bot(target_bot_name, message, button_text):
             logging.info(f"Message '{message}' sent to {target_bot.username}!")
         except Exception as e:
             logging.error(f"Failed to send message to {target_bot.username}: {e}")
-            await asyncio.sleep(10)  # تأخير قصير قبل إعادة المحاولة
-            continue
+           # await asyncio.sleep(10)  # تأخير قصير قبل إعادة المحاولة
+           # continue
 
         # الانتظار لرد البوت (مهلة 10 ثواني)
         await asyncio.sleep(10)
@@ -55,8 +55,8 @@ async def handle_bot(target_bot_name, message, button_text):
         messages = await client.get_messages(target_bot.username, limit=1)
         if not messages:
             logging.warning("No messages found in the chat.")
-            await asyncio.sleep(10)  # تأخير قصير قبل إعادة المحاولة
-            continue
+           # await asyncio.sleep(10)  # تأخير قصير قبل إعادة المحاولة
+           # continue
 
         last_message = messages[0]
 
@@ -76,8 +76,8 @@ async def handle_bot(target_bot_name, message, button_text):
                                 logging.info(f"Button '{button.text}' clicked!")
                             except Exception as e:
                                 logging.error(f"Button clicked, but bot did not respond: {e}")
-                                await asyncio.sleep(10)  # تأخير قصير قبل إعادة المحاولة
-                                continue
+                               # await asyncio.sleep(10)  # تأخير قصير قبل إعادة المحاولة
+                               # continue
 
                             await asyncio.sleep(10)
 
@@ -100,22 +100,22 @@ async def handle_bot(target_bot_name, message, button_text):
                                         continue
                             else:
                                 logging.warning("Bot did not respond with a new message.")
-                                await asyncio.sleep(10)  # تأخير قصير قبل إعادة المحاولة
-                                continue
+                               # await asyncio.sleep(10)  # تأخير قصير قبل إعادة المحاولة
+                               # continue
                         else:
                             logging.warning("Button is not clickable.")
-                            await asyncio.sleep(10)  # تأخير قصير قبل إعادة المحاولة
-                            continue
+                          #  await asyncio.sleep(10)  # تأخير قصير قبل إعادة المحاولة
+                           # continue
                     else:
                         logging.warning(f"Button '{button_text}' not found in the last message.")
-                        await asyncio.sleep(10)  # تأخير قصير قبل إعادة المحاولة
-                        continue
+                      #  await asyncio.sleep(10)  # تأخير قصير قبل إعادة المحاولة
+                      #  continue
 
         # التحقق من وجود العبارة "next available bonus"
         if "next available bonus" not in last_message.text:
             logging.warning("'next available bonus' not found in the message. Restarting the bot...")
-            await asyncio.sleep(10)  # تأخير قصير قبل إعادة التشغيل
-            continue  # إعادة التشغيل من البداية
+           # await asyncio.sleep(10)  # تأخير قصير قبل إعادة التشغيل
+          #  continue  # إعادة التشغيل من البداية
 
 # تشغيل البوتات بشكل مستقل
 async def main():
