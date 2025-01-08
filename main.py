@@ -1,24 +1,29 @@
-
 import os
 import re
 import asyncio
 import logging
 from telethon import TelegramClient, functions
 from telethon.tl.types import User, KeyboardButtonCallback
-
-# إعداد المتغيرات البيئية
-os.environ['API_ID'] = 'api_id'  # استبدل بالقيمة الفعلية لـ API_ID
-os.environ['API_HASH'] = 'api_hash'  # استبدل بالقيمة الفعلية لـ API_HASH
-
-# قراءة بيانات الاعتماد من المتغيرات البيئية
-api_id = os.getenv('API_ID')
-api_hash = os.getenv('API_HASH')
+from telethon.sessions import StringSession
 
 # إعداد التسجيل (Logging)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
+# قراءة المتغيرات البيئية
+api_id = os.getenv('API_ID')  # API_ID من متغيرات البيئة
+api_hash = os.getenv('API_HASH')  # API_HASH من متغيرات البيئة
+session_string = os.getenv('SESSION_STRING')  # SESSION_STRING من متغيرات البيئة
+
+# التحقق من وجود المتغيرات البيئية
+if not api_id or not api_hash or not session_string:
+    logging.error("يجب تعيين API_ID و API_HASH و SESSION_STRING في متغيرات البيئة.")
+    exit(1)
+
+# إنشاء العميل باستخدام StringSession
+client = TelegramClient(StringSession(session_string), api_id, api_hash)
+
 # دالة مشتركة للتعامل مع البوتات
-async def handle_bot(client, target_bot_name, message, button_text):
+async def handle_bot(target_bot_name, message, button_text):
     # البحث عن البوت بالاسم المحدد (مرة واحدة فقط)
     dialogs = await client.get_dialogs()
     target_bot = None
@@ -114,15 +119,14 @@ async def handle_bot(client, target_bot_name, message, button_text):
 
 # تشغيل البوتات بشكل مستقل
 async def main():
-    client = TelegramClient('my_session', api_id, api_hash)
     await client.start()
 
     # تشغيل كل بوت كمهمة منفصلة
     task1 = asyncio.create_task(
-        handle_bot(client, "Bitcoin (BTC) Cloud Pool", "Get Coin 🎁", "🎁 Daily Bonus 🎁")
+        handle_bot("Bitcoin (BTC) Cloud Pool", "Get Coin 🎁", "🎁 Daily Bonus 🎁")
     )
     task2 = asyncio.create_task(
-        handle_bot(client, "Daily (USDT) Claim", "🆔 Account Balance", "🔥 Huge Extra Bonus 🔥")
+        handle_bot("Daily (USDT) Claim", "🆔 Account Balance", "🔥 Huge Extra Bonus 🔥")
     )
 
     # الانتظار حتى انتهاء المهام (لن يحدث هذا أبدًا لأن المهام تعمل بشكل مستمر)
@@ -132,4 +136,5 @@ async def main():
 
 # تشغيل البرنامج
 if __name__ == "__main__":
-    asyncio.run(main())
+    with client:
+        client.loop.run_until_complete(main())
