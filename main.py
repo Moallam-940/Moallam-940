@@ -5,7 +5,7 @@ import logging
 from telethon import TelegramClient, functions
 from telethon.tl.types import User, KeyboardButtonCallback
 from telethon.sessions import StringSession
-from flask import Flask
+from quart import Quart
 
 # إعداد التسجيل (Logging)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -18,32 +18,12 @@ session_string = os.getenv('SESSION_STRING')
 # إنشاء العميل باستخدام StringSession
 client = TelegramClient(StringSession(session_string), api_id, api_hash)
 
-# إنشاء تطبيق Flask
-app = Flask(__name__)
+# إنشاء تطبيق Quart
+app = Quart(__name__)
 
 @app.route('/')
-def home():
+async def home():
     return "Service is running!"
-
-# مهمة الخلفية (Background Worker) لإبقاء الخدمة نشطة
-async def keep_alive():
-    while True:
-        logging.info("Service is active...")
-        await asyncio.sleep(150)  # انتظر 2.5 دقيقة قبل التكرار
-
-# دالة لإعادة المحاولة مع حد أقصى
-async def retry_operation(operation, max_retries=3, delay=10):
-    retry_count = 0
-    while retry_count < max_retries:
-        try:
-            await operation()
-            return True  # نجحت العملية
-        except Exception as e:
-            logging.error(f"Attempt {retry_count + 1} failed: {e}")
-            retry_count += 1
-            if retry_count < max_retries:
-                await asyncio.sleep(delay)  # تأخير قبل إعادة المحاولة
-    return False  # فشلت جميع المحاولات
 
 # دالة مشتركة للتعامل مع البوتات
 async def handle_bot(target_bot_name, message, button_text):
@@ -166,9 +146,9 @@ async def main():
         handle_bot("Daily (USDT) Claim", "🆔 Account Balance", "🔥 Huge Extra Bonus 🔥")
     )
 
-    # تشغيل خادم Flask
+    # تشغيل خادم Quart
     port = int(os.getenv('PORT', 8080))  # استخدام المنفذ من المتغيرات البيئية
-    app.run(host='0.0.0.0', port=port)
+    await app.run_task(host='0.0.0.0', port=port)
 
     # الانتظار حتى انتهاء المهام (لن يحدث هذا أبدًا لأن المهام تعمل بشكل مستمر)
     await asyncio.gather(task1, task2)
