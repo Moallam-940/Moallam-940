@@ -1,9 +1,12 @@
 async def handle_bot(target_bot_name, message, button_text):
+    logging.info(f"Starting handle_bot for {target_bot_name}...")
     retry_count = 0  # عدد مرات إعادة التشغيل
     max_retries = 1  # الحد الأقصى لعدد المحاولات
 
     while True:
         try:
+            logging.info(f"Attempt {retry_count + 1} for {target_bot_name}...")
+
             # التحقق من أن العميل مصرح له بالاتصال
             if not await client.is_user_authorized():
                 logging.error("Client is not authorized. Please check the session string.")
@@ -12,9 +15,9 @@ async def handle_bot(target_bot_name, message, button_text):
 
             # الحصول على الدردشات (المحادثات) المتاحة
             dialogs = await client.get_dialogs()
-            target_bot = None
+            logging.info(f"Found {len(dialogs)} dialogs.")
 
-            # البحث عن البوت المستهدف في الدردشات
+            target_bot = None
             for dialog in dialogs:
                 if isinstance(dialog.entity, User) and dialog.entity.bot and dialog.name == target_bot_name:
                     target_bot = dialog.entity
