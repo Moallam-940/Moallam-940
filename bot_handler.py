@@ -1,4 +1,12 @@
 import logging
+import asyncio
+import re
+from telethon import functions
+from telethon.tl.types import User, KeyboardButtonCallback
+from telegram_client import client
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
 async def handle_bot(target_bot_name, message, button_text):
     logging.info(f"Starting handle_bot for {target_bot_name}...")
     retry_count = 0  # عدد مرات إعادة التشغيل
