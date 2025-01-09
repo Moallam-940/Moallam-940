@@ -19,9 +19,7 @@ async def main():
         logging.error(f"Failed to start Telegram client: {e}")
         return
 
-    # طباعة معلومات الجلسة والمتغيرات البيئية
-    logging.info(f"API_ID: {os.getenv('API_ID')}, API_HASH: {os.getenv('API_HASH')}, SESSION_STRING: {os.getenv('SESSION_STRING')}")
-
+    
     # إنشاء المهام للتعامل مع البوتات
     task1 = asyncio.create_task(
         handle_bot("Bitcoin (BTC) Cloud Pool", "Get Coin 🎁", "🎁 Daily Bonus 🎁")

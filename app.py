@@ -1,3 +1,4 @@
+import logging
 from quart import Quart
 from config import port
 
