@@ -1,8 +1,10 @@
 import asyncio
 import logging
-from telethon import TelegramClient
-from telethon.sessions import StringSession
-from config import api_id, api_hash, session_string
+import os
+from telegram_client import client  # استيراد العميل من telegram_client.py
+from bot_handler import handle_bot
+from app import run_app
+from config import port  # استيراد المنفذ من config.py
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -18,7 +20,7 @@ async def main():
         return
 
     # طباعة معلومات الجلسة والمتغيرات البيئية
-    logging.info(f"API_ID: {api_id}, API_HASH: {api_hash}, SESSION_STRING: {session_string}")
+    logging.info(f"API_ID: {os.getenv('API_ID')}, API_HASH: {os.getenv('API_HASH')}, SESSION_STRING: {os.getenv('SESSION_STRING')}")
 
     # إنشاء المهام للتعامل مع البوتات
     task1 = asyncio.create_task(
@@ -29,8 +31,7 @@ async def main():
     )
 
     # تشغيل التطبيق
-    port = int(os.getenv('PORT', 8080))
-    await app.run_task(host='0.0.0.0', port=port)
+    await run_app()
 
     # انتظار انتهاء المهام
     await asyncio.gather(task1, task2)
