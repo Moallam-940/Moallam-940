@@ -30,8 +30,6 @@ async def main():
         handle_bot("Daily (USDT) Claim", "🆔 Account Balance", "🔥 Huge Extra Bonus 🔥")
     )
 
-logging.info("Tasks created successfully!")
-
     # تشغيل التطبيق
     await run_app()
 
