@@ -5,7 +5,7 @@ import logging
 from telethon import TelegramClient, functions
 from telethon.tl.types import User, KeyboardButtonCallback
 from telethon.sessions import StringSession
-from flask import Flask  # إضافة Flask لإنشاء خادم ويب
+from flask import Flask
 
 # إعداد التسجيل (Logging)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -48,6 +48,12 @@ async def retry_operation(operation, max_retries=3, delay=10):
 # دالة مشتركة للتعامل مع البوتات
 async def handle_bot(target_bot_name, message, button_text):
     while True:  # حلقة لا نهائية لإعادة تشغيل الكود بالكامل
+        # التحقق من أن العميل مفعل
+        if not await client.is_user_authorized():
+            logging.error("Client is not authorized. Please check the session string.")
+            await asyncio.sleep(3600)  # الانتظار لمدة ساعة قبل إعادة التشغيل
+            continue
+
         # البحث عن البوت بالاسم المحدد (مرة واحدة فقط)
         dialogs = await client.get_dialogs()
         target_bot = None
@@ -55,6 +61,8 @@ async def handle_bot(target_bot_name, message, button_text):
             if isinstance(dialog.entity, User) and dialog.entity.bot and dialog.name == target_bot_name:
                 target_bot = dialog.entity
                 break
+            elif isinstance(dialog.entity, User) and dialog.entity.bot:
+                logging.info(f"Found bot: {dialog.name} (Username: {dialog.entity.username})")
 
         if not target_bot:
             logging.error(f"Bot with name '{target_bot_name}' not found.")
@@ -64,39 +72,26 @@ async def handle_bot(target_bot_name, message, button_text):
         logging.info(f"Found bot: {target_bot.username}")
 
         # إرسال رسالة إلى البوت
-        send_message_success = await retry_operation(
-            lambda: client.send_message(target_bot.username, message),
-            max_retries=3,
-            delay=10
-        )
-        if not send_message_success:
-            logging.error("Failed to send message after 3 attempts. Restarting in 1 hour...")
-            await asyncio.sleep(3600)  # الانتظار لمدة ساعة قبل إعادة التشغيل
+        try:
+            await client.send_message(target_bot.username, message)
+            logging.info(f"Message '{message}' sent to {target_bot.username}!")
+        except Exception as e:
+            logging.error(f"Failed to send message to {target_bot.username}: {e}")
+            await asyncio.sleep(10)  # تأخير قصير قبل إعادة المحاولة
             continue
-
-        logging.info(f"Message '{message}' sent to {target_bot.username}!")
 
         # الانتظار لرد البوت (مهلة 10 ثواني)
         await asyncio.sleep(10)
 
         # جلب آخر رسالة في المحادثة
-        get_messages_success = await retry_operation(
-            lambda: client.get_messages(target_bot.username, limit=1),
-            max_retries=3,
-            delay=10
-        )
-        if not get_messages_success:
-            logging.error("Failed to get messages after 3 attempts. Restarting in 1 hour...")
-            await asyncio.sleep(3600)  # الانتظار لمدة ساعة قبل إعادة التشغيل
-            continue
-
         messages = await client.get_messages(target_bot.username, limit=1)
         if not messages:
             logging.warning("No messages found in the chat.")
-            await asyncio.sleep(3600)  # الانتظار لمدة ساعة قبل إعادة التشغيل
+            await asyncio.sleep(10)  # تأخير قصير قبل إعادة المحاولة
             continue
 
         last_message = messages[0]
+        logging.info(f"Last message from bot: {last_message.text}")
 
         # التحقق من وجود أزرار في الرسالة
         if last_message.reply_markup:
@@ -160,6 +155,7 @@ async def handle_bot(target_bot_name, message, button_text):
 
 # الدالة الرئيسية
 async def main():
+    logging.info("Starting the bot service...")
     await client.start()
 
     # تشغيل كل بوت كمهمة منفصلة
@@ -179,5 +175,6 @@ async def main():
 
 # تشغيل البرنامج
 if __name__ == "__main__":
+    logging.info("Initializing the application...")
     with client:
         client.loop.run_until_complete(main())
