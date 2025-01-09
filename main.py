@@ -1,10 +1,11 @@
-﻿import os
+import os
 import re
 import asyncio
 import logging
 from telethon import TelegramClient, functions
 from telethon.tl.types import User, KeyboardButtonCallback
 from telethon.sessions import StringSession
+from flask import Flask  # إضافة Flask لإنشاء خادم ويب
 
 # إعداد التسجيل (Logging)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -17,12 +18,19 @@ session_string = os.getenv('SESSION_STRING')
 # إنشاء العميل باستخدام StringSession
 client = TelegramClient(StringSession(session_string), api_id, api_hash)
 
+# إنشاء تطبيق Flask
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return "Service is running!"
+
 # مهمة الخلفية (Background Worker) لإبقاء الخدمة نشطة
 async def keep_alive():
     while True:
         logging.info("Service is active...")
         await asyncio.sleep(150)  # انتظر 2.5 دقيقة قبل التكرار
-        
+
 # دالة لإعادة المحاولة مع حد أقصى
 async def retry_operation(operation, max_retries=3, delay=10):
     retry_count = 0
@@ -97,21 +105,17 @@ async def handle_bot(target_bot_name, message, button_text):
                     if button_text in button.text:
                         logging.info(f"Found the button: {button_text}")
                         if isinstance(button, KeyboardButtonCallback):
-                            click_button_success = await retry_operation(
-                                lambda: client(functions.messages.GetBotCallbackAnswerRequest(
+                            try:
+                                await client(functions.messages.GetBotCallbackAnswerRequest(
                                     peer=target_bot.username,
                                     msg_id=last_message.id,
                                     data=button.data
-                                )),
-                                max_retries=3,
-                                delay=10
-                            )
-                            if not click_button_success:
-                                logging.error("Failed to click button after 3 attempts. Restarting in 1 hour...")
-                                await asyncio.sleep(3600)  # الانتظار لمدة ساعة قبل إعادة التشغيل
-                                continue
-
-                            logging.info(f"Button '{button.text}' clicked!")
+                                ))
+                                logging.info(f"Button '{button.text}' clicked!")
+                            except Exception as e:
+                                logging.error(f"Failed to receive response after clicking button: {e}")
+                                # الانتقال إلى الخطوة التالية دون إعادة المحاولة أو الانتظار
+                                pass
 
                             await asyncio.sleep(10)
 
@@ -139,8 +143,8 @@ async def handle_bot(target_bot_name, message, button_text):
                                         continue
                             else:
                                 logging.warning("Bot did not respond with a new message.")
-                                await asyncio.sleep(3600)  # الانتظار لمدة ساعة قبل إعادة التشغيل
-                                continue
+                                # الانتقال إلى الخطوة التالية دون إعادة المحاولة أو الانتظار
+                                pass
                         else:
                             logging.warning("Button is not clickable.")
                             await asyncio.sleep(3600)  # الانتظار لمدة ساعة قبل إعادة التشغيل
@@ -165,6 +169,10 @@ async def main():
     task2 = asyncio.create_task(
         handle_bot("Daily (USDT) Claim", "🆔 Account Balance", "🔥 Huge Extra Bonus 🔥")
     )
+
+    # تشغيل خادم Flask
+    port = int(os.getenv('PORT', 8080))  # استخدام المنفذ من المتغيرات البيئية
+    app.run(host='0.0.0.0', port=port)
 
     # الانتظار حتى انتهاء المهام (لن يحدث هذا أبدًا لأن المهام تعمل بشكل مستمر)
     await asyncio.gather(task1, task2)
