@@ -5,26 +5,27 @@ from telethon import functions
 from telethon.tl.types import User, KeyboardButtonCallback
 from telegram_client import client
 
+# تهيئة السجل (Logging)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 async def handle_bot(target_bot_name, message, button_text):
-    logging.info(f"Starting handle_bot for {target_bot_name}...")
-    retry_count = 0  # عدد مرات إعادة التشغيل
+    logging.info(f"جارٍ بدء التعامل مع البوت '{target_bot_name}'...")
+    retry_count = 0  # عدد مرات إعادة المحاولة
     max_retries = 1  # الحد الأقصى لعدد المحاولات
 
     while True:
         try:
-            logging.info(f"Attempt {retry_count + 1} for {target_bot_name}...")
+            logging.info(f"المحاولة رقم {retry_count + 1} للبوت '{target_bot_name}'...")
 
             # التحقق من أن العميل مصرح له بالاتصال
             if not await client.is_user_authorized():
-                logging.error("Client is not authorized. Please check the session string.")
+                logging.error("العميل غير مصرح له. يرجى التحقق من جلسة العمل.")
                 await asyncio.sleep(3600)  # الانتظار لمدة ساعة قبل إعادة المحاولة
                 continue
 
             # الحصول على الدردشات (المحادثات) المتاحة
             dialogs = await client.get_dialogs()
-            logging.info(f"Found {len(dialogs)} dialogs.")
+            logging.info(f"تم العثور على {len(dialogs)} دردشة.")
 
             target_bot = None
             for dialog in dialogs:
@@ -32,25 +33,25 @@ async def handle_bot(target_bot_name, message, button_text):
                     target_bot = dialog.entity
                     break
                 elif isinstance(dialog.entity, User) and dialog.entity.bot:
-                    logging.info(f"Found bot: {dialog.name} (Username: {dialog.entity.username})")
+                    logging.info(f"تم العثور على بوت: {dialog.name} (اسم المستخدم: {dialog.entity.username})")
 
             # إذا لم يتم العثور على البوت
             if not target_bot:
-                logging.error(f"Bot with name '{target_bot_name}' not found.")
+                logging.error(f"لم يتم العثور على البوت باسم '{target_bot_name}'.")
                 retry_count += 1  # زيادة عدد المحاولات
 
                 if retry_count >= max_retries:
-                    logging.warning("Max retries reached. Waiting for 1 hour before retrying...")
+                    logging.warning("تم الوصول إلى الحد الأقصى للمحاولات. جاري الانتظار لمدة ساعة قبل إعادة المحاولة...")
                     await asyncio.sleep(3600)  # الانتظار لمدة ساعة
                     retry_count = 0  # إعادة تعيين عدد المحاولات
                 continue
 
-            logging.info(f"Found bot: {target_bot.username}")
+            logging.info(f"تم العثور على البوت: {target_bot.username}")
 
             # إرسال الرسالة إلى البوت
-            logging.info(f"Sending message '{message}' to {target_bot.username}...")
+            logging.info(f"جارٍ إرسال الرسالة '{message}' إلى {target_bot.username}...")
             await client.send_message(target_bot.username, message)
-            logging.info(f"Message '{message}' sent to {target_bot.username}!")
+            logging.info(f"تم إرسال الرسالة '{message}' إلى {target_bot.username}!")
 
             # الانتظار لمدة 10 ثواني
             await asyncio.sleep(10)
@@ -58,17 +59,17 @@ async def handle_bot(target_bot_name, message, button_text):
             # الحصول على آخر رسالة من البوت
             messages = await client.get_messages(target_bot.username, limit=1)
             if not messages:
-                logging.warning("No messages found in the chat.")
+                logging.warning("لم يتم العثور على رسائل في الدردشة.")
                 retry_count += 1  # زيادة عدد المحاولات
 
                 if retry_count >= max_retries:
-                    logging.warning("Max retries reached. Waiting for 1 hour before retrying...")
+                    logging.warning("تم الوصول إلى الحد الأقصى للمحاولات. جاري الانتظار لمدة ساعة قبل إعادة المحاولة...")
                     await asyncio.sleep(3600)  # الانتظار لمدة ساعة
                     retry_count = 0  # إعادة تعيين عدد المحاولات
                 continue
 
             last_message = messages[0]
-            logging.info(f"Last message from bot: {last_message.text}")
+            logging.info(f"آخر رسالة من البوت: {last_message.text}")
 
             # البحث عن الزر المطلوب في الرسالة الأخيرة
             if last_message.reply_markup:
@@ -76,7 +77,7 @@ async def handle_bot(target_bot_name, message, button_text):
                 for row in last_message.reply_markup.rows:
                     for button in row.buttons:
                         if button_text in button.text:
-                            logging.info(f"Found the button: {button_text}")
+                            logging.info(f"تم العثور على الزر: {button_text}")
                             button_found = True
 
                             # الضغط على الزر
@@ -87,9 +88,9 @@ async def handle_bot(target_bot_name, message, button_text):
                                         msg_id=last_message.id,
                                         data=button.data
                                     ))
-                                    logging.info(f"Button '{button.text}' clicked!")
+                                    logging.info(f"تم النقر على الزر '{button.text}'!")
                                 except Exception as e:
-                                    logging.error(f"Failed to receive response after clicking button: {e}")
+                                    logging.error(f"فشل في تلقي الرد بعد النقر على الزر: {e}")
                                     
                             # الانتظار لمدة 10 ثواني بعد النقر على الزر
                             await asyncio.sleep(10)
@@ -97,16 +98,16 @@ async def handle_bot(target_bot_name, message, button_text):
                             # الحصول على الرسائل الجديدة بعد النقر على الزر
                             new_messages = await client.get_messages(target_bot.username, limit=1)
                             if new_messages and new_messages[0].id != last_message.id:
-                                logging.info("Bot responded with a new message.")
-                                logging.info(f"Bot's response: {new_messages[0].text}")
+                                logging.info("رد البوت برسالة جديدة.")
+                                logging.info(f"رد البوت: {new_messages[0].text}")
 
                                 # التحقق من وجود العبارة المطلوبة في الرسالة الجديدة
                                 if "next available bonus" not in new_messages[0].text:
-                                    logging.warning("'next available bonus' not found in the message.")
+                                    logging.warning("لم يتم العثور على 'next available bonus' في الرسالة.")
                                     retry_count += 1  # زيادة عدد المحاولات
 
                                     if retry_count >= max_retries:
-                                        logging.warning("Max retries reached. Waiting for 1 hour before retrying...")
+                                        logging.warning("تم الوصول إلى الحد الأقصى للمحاولات. جاري الانتظار لمدة ساعة قبل إعادة المحاولة...")
                                         await asyncio.sleep(3600)  # الانتظار لمدة ساعة
                                         retry_count = 0  # إعادة تعيين عدد المحاولات
                                     continue
@@ -117,52 +118,52 @@ async def handle_bot(target_bot_name, message, button_text):
                                         minutes = int(time_match.group(1))
                                         seconds = int(time_match.group(2))
                                         total_seconds = minutes * 60 + seconds + 120
-                                        logging.info(f"Waiting for {total_seconds} seconds before restarting...")
+                                        logging.info(f"جارٍ الانتظار لمدة {total_seconds} ثانية قبل إعادة التشغيل...")
                                         await asyncio.sleep(total_seconds)
                                     else:
-                                        logging.warning("Could not extract time from the message.")
+                                        logging.warning("تعذر استخراج الوقت من الرسالة.")
                                         retry_count += 1  # زيادة عدد المحاولات
 
                                         if retry_count >= max_retries:
-                                            logging.warning("Max retries reached. Waiting for 1 hour before retrying...")
+                                            logging.warning("تم الوصول إلى الحد الأقصى للمحاولات. جاري الانتظار لمدة ساعة قبل إعادة المحاولة...")
                                             await asyncio.sleep(3600)  # الانتظار لمدة ساعة
                                             retry_count = 0  # إعادة تعيين عدد المحاولات
                                         continue
                             else:
-                                logging.warning("Bot did not respond with a new message.")
+                                logging.warning("لم يرد البوت برسالة جديدة.")
                                 retry_count += 1  # زيادة عدد المحاولات
 
                                 if retry_count >= max_retries:
-                                    logging.warning("Max retries reached. Waiting for 1 hour before retrying...")
+                                    logging.warning("تم الوصول إلى الحد الأقصى للمحاولات. جاري الانتظار لمدة ساعة قبل إعادة المحاولة...")
                                     await asyncio.sleep(3600)  # الانتظار لمدة ساعة
                                     retry_count = 0  # إعادة تعيين عدد المحاولات
                                 continue
 
                 if not button_found:
-                    logging.warning(f"Button '{button_text}' not found in the last message.")
+                    logging.warning(f"لم يتم العثور على الزر '{button_text}' في الرسالة الأخيرة.")
                     retry_count += 1  # زيادة عدد المحاولات
 
                     if retry_count >= max_retries:
-                        logging.warning("Max retries reached. Waiting for 1 hour before retrying...")
+                        logging.warning("تم الوصول إلى الحد الأقصى للمحاولات. جاري الانتظار لمدة ساعة قبل إعادة المحاولة...")
                         await asyncio.sleep(3600)  # الانتظار لمدة ساعة
                         retry_count = 0  # إعادة تعيين عدد المحاولات
                     continue
             else:
-                logging.warning("No buttons found in the last message.")
+                logging.warning("لم يتم العثور على أزرار في الرسالة الأخيرة.")
                 retry_count += 1  # زيادة عدد المحاولات
 
                 if retry_count >= max_retries:
-                    logging.warning("Max retries reached. Waiting for 1 hour before retrying...")
+                    logging.warning("تم الوصول إلى الحد الأقصى للمحاولات. جاري الانتظار لمدة ساعة قبل إعادة المحاولة...")
                     await asyncio.sleep(3600)  # الانتظار لمدة ساعة
                     retry_count = 0  # إعادة تعيين عدد المحاولات
                 continue
 
         except Exception as e:
-            logging.error(f"An error occurred: {e}")
+            logging.error(f"حدث خطأ: {e}")
             retry_count += 1  # زيادة عدد المحاولات
 
             if retry_count >= max_retries:
-                logging.warning("Max retries reached. Waiting for 1 hour before retrying...")
+                logging.warning("تم الوصول إلى الحد الأقصى للمحاولات. جاري الانتظار لمدة ساعة قبل إعادة المحاولة...")
                 await asyncio.sleep(3600)  # الانتظار لمدة ساعة
                 retry_count = 0  # إعادة تعيين عدد المحاولات
             continue

@@ -5,17 +5,18 @@ from bot_handler import handle_bot
 from app import run_app
 from config import port  # استيراد المنفذ من config.py
 
+# تهيئة السجل (Logging)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 async def main():
-    logging.info("Starting the bot service...")
+    logging.info("جارٍ بدء خدمة البوت...")
 
     # بدء عميل Telegram
     try:
         await client.start()
-        logging.info("Telegram client started successfully!")
+        logging.info("تم بدء عميل Telegram بنجاح!")
     except Exception as e:
-        logging.error(f"Failed to start Telegram client: {e}")
+        logging.error(f"فشل في بدء عميل Telegram: {e}")
         return
 
     # إنشاء المهام للتعامل مع البوتات
@@ -26,13 +27,13 @@ async def main():
         handle_bot("Daily (USDT) Claim", "🆔 Account Balance", "🔥 Huge Extra Bonus 🔥")
     )
 
-    # تشغيل Quart
+    # تشغيل تطبيق Quart
     await run_app()
 
     # انتظار انتهاء المهام
     await asyncio.gather(task1, task2)
 
 if __name__ == "__main__":
-    logging.info("Initializing the application...")
+    logging.info("جارٍ تهيئة التطبيق...")
     with client:
         client.loop.run_until_complete(main())

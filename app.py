@@ -18,9 +18,9 @@ async def startup():
 
 @app.route('/')
 async def home():
-    logging.info("Home route accessed!")
-    return "Service is running!"
+    logging.info("تم الوصول إلى الصفحة الرئيسية!")
+    return "الخدمة قيد التشغيل!"
 
 async def run_app():
-    logging.info("Starting Quart app...")
+    logging.info("جارٍ بدء تطبيق Quart...")
     await app.run_task(host='0.0.0.0', port=port)
