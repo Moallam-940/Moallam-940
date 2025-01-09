@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import os
 from telegram_client import client  # استيراد العميل من telegram_client.py
 from bot_handler import handle_bot
 from app import run_app
@@ -19,7 +18,6 @@ async def main():
         logging.error(f"Failed to start Telegram client: {e}")
         return
 
-    
     # إنشاء المهام للتعامل مع البوتات
     task1 = asyncio.create_task(
         handle_bot("Bitcoin (BTC) Cloud Pool", "Get Coin 🎁", "🎁 Daily Bonus 🎁")
@@ -28,7 +26,7 @@ async def main():
         handle_bot("Daily (USDT) Claim", "🆔 Account Balance", "🔥 Huge Extra Bonus 🔥")
     )
 
-    # تشغيل التطبيق
+    # تشغيل Quart
     await run_app()
 
     # انتظار انتهاء المهام
