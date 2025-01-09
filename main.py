@@ -1,3 +1,5 @@
+import os
+import re
 import asyncio
 import logging
 from telethon import TelegramClient, functions
