@@ -90,14 +90,7 @@ async def handle_bot(target_bot_name, message, button_text):
                                     logging.info(f"Button '{button.text}' clicked!")
                                 except Exception as e:
                                     logging.error(f"Failed to receive response after clicking button: {e}")
-                                    retry_count += 1  # زيادة عدد المحاولات
-
-                                    if retry_count >= max_retries:
-                                        logging.warning("Max retries reached. Waiting for 1 hour before retrying...")
-                                        await asyncio.sleep(3600)  # الانتظار لمدة ساعة
-                                        retry_count = 0  # إعادة تعيين عدد المحاولات
-                                    continue
-
+                                    
                             # الانتظار لمدة 10 ثواني بعد النقر على الزر
                             await asyncio.sleep(10)
 
