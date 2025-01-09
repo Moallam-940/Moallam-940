@@ -1,4 +1,4 @@
-import os
+﻿import os
 import re
 import asyncio
 import logging
@@ -17,6 +17,12 @@ session_string = os.getenv('SESSION_STRING')
 # إنشاء العميل باستخدام StringSession
 client = TelegramClient(StringSession(session_string), api_id, api_hash)
 
+# مهمة الخلفية (Background Worker) لإبقاء الخدمة نشطة
+async def keep_alive():
+    while True:
+        logging.info("Service is active...")
+        await asyncio.sleep(150)  # انتظر 2.5 دقيقة قبل التكرار
+        
 # دالة لإعادة المحاولة مع حد أقصى
 async def retry_operation(operation, max_retries=3, delay=10):
     retry_count = 0
