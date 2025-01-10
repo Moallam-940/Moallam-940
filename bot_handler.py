@@ -1,7 +1,6 @@
 import logging
 import asyncio
 import re
-from concurrent.futures import ThreadPoolExecutor
 from telethon import functions
 from telethon.tl.types import User, KeyboardButtonCallback
 from telegram_client import client
@@ -9,7 +8,7 @@ from telegram_client import client
 # تهيئة السجل (Logging)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-async def handle_bot_async(target_bot_name, message, button_text):
+async def handle_bot(target_bot_name, message, button_text):
     """
     دالة غير تزامنية (async) للتعامل مع البوت.
     """
@@ -176,17 +175,3 @@ async def handle_bot_async(target_bot_name, message, button_text):
                 await asyncio.sleep(3600)  # الانتظار لمدة ساعة
                 retry_count = 0  # إعادة تعيين عدد المحاولات
             continue
-
-def handle_bot_sync(target_bot_name, message, button_text):
-    """
-    دالة تزامنية (sync) لتشغيل المهمة في خيط منفصل.
-    """
-    asyncio.run(handle_bot_async(target_bot_name, message, button_text))
-
-async def handle_bot(target_bot_name, message, button_text):
-    """
-    دالة غير تزامنية (async) لتشغيل المهمة في خيط منفصل.
-    """
-    loop = asyncio.get_running_loop()
-    with ThreadPoolExecutor() as executor:
-        await loop.run_in_executor(executor, handle_bot_sync, target_bot_name, message, button_text)
