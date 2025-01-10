@@ -1,7 +1,7 @@
 import logging
-from quart import Quart
+from quart import Quart  # استيراد Quart لإنشاء تطبيق ويب
 import asyncio
-from config import port
+from config import port  # استيراد المنفذ من config.py
 
 app = Quart(__name__)
 
