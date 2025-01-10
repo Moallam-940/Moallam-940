@@ -22,18 +22,14 @@ def handle_bot_sync(target_bot_name, message, button_text):
             logging.info(f"المحاولة رقم {retry_count + 1} للبوت '{target_bot_name}'...")
 
             # التحقق من أن العميل مصرح له بالاتصال
-            if not client.is_connected():
-                logging.info("جارٍ توصيل العميل...")
-                client.connect()  # توصيل العميل إذا كان غير متصل
-
-            if not client.is_user_authorized():
+            if not asyncio.run(client.is_user_authorized()):  # استخدام asyncio.run
                 logging.error("العميل غير مصرح له. يرجى التحقق من جلسة العمل.")
                 import time
                 time.sleep(3600)  # الانتظار لمدة ساعة قبل إعادة المحاولة
                 continue
 
             # الحصول على الدردشات (المحادثات) المتاحة
-            dialogs = client.get_dialogs()
+            dialogs = asyncio.run(client.get_dialogs())  # استخدام asyncio.run
             logging.info(f"تم العثور على {len(dialogs)} دردشة.")
 
             target_bot = None
@@ -60,7 +56,7 @@ def handle_bot_sync(target_bot_name, message, button_text):
 
             # إرسال الرسالة إلى البوت
             logging.info(f"جارٍ إرسال الرسالة '{message}' إلى {target_bot.username}...")
-            client.send_message(target_bot.username, message)
+            asyncio.run(client.send_message(target_bot.username, message))  # استخدام asyncio.run
             logging.info(f"تم إرسال الرسالة '{message}' إلى {target_bot.username}!")
 
             # الانتظار لمدة 10 ثواني
@@ -68,7 +64,7 @@ def handle_bot_sync(target_bot_name, message, button_text):
             time.sleep(10)
 
             # الحصول على آخر رسالة من البوت
-            messages = client.get_messages(target_bot.username, limit=1)
+            messages = asyncio.run(client.get_messages(target_bot.username, limit=1))  # استخدام asyncio.run
             if not messages:
                 logging.warning("لم يتم العثور على رسائل في الدردشة.")
                 retry_count += 1  # زيادة عدد المحاولات
@@ -94,11 +90,11 @@ def handle_bot_sync(target_bot_name, message, button_text):
                             # الضغط على الزر
                             if isinstance(button, KeyboardButtonCallback):
                                 try:
-                                    client(functions.messages.GetBotCallbackAnswerRequest(
+                                    asyncio.run(client(functions.messages.GetBotCallbackAnswerRequest(
                                         peer=target_bot.username,
                                         msg_id=last_message.id,
                                         data=button.data
-                                    ))
+                                    )))  # استخدام asyncio.run
                                     logging.info(f"تم النقر على الزر '{button.text}'!")
                                 except Exception as e:
                                     logging.error(f"فشل في تلقي الرد بعد النقر على الزر: {e}")
@@ -107,7 +103,7 @@ def handle_bot_sync(target_bot_name, message, button_text):
                             time.sleep(10)
 
                             # الحصول على الرسائل الجديدة بعد النقر على الزر
-                            new_messages = client.get_messages(target_bot.username, limit=1)
+                            new_messages = asyncio.run(client.get_messages(target_bot.username, limit=1))  # استخدام asyncio.run
                             if new_messages and new_messages[0].id != last_message.id:
                                 logging.info("رد البوت برسالة جديدة.")
                                 logging.info(f"رد البوت: {new_messages[0].text}")
