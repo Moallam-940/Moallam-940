@@ -9,9 +9,9 @@ from telegram_client import client
 # تهيئة السجل (Logging)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-def handle_bot_sync(target_bot_name, message, button_text):
+async def handle_bot_async(target_bot_name, message, button_text):
     """
-    دالة تزامنية (synchronous) للتعامل مع البوت.
+    دالة غير تزامنية (async) للتعامل مع البوت.
     """
     logging.info(f"جارٍ بدء التعامل مع البوت '{target_bot_name}'...")
     retry_count = 0  # عدد مرات إعادة المحاولة
@@ -22,14 +22,13 @@ def handle_bot_sync(target_bot_name, message, button_text):
             logging.info(f"المحاولة رقم {retry_count + 1} للبوت '{target_bot_name}'...")
 
             # التحقق من أن العميل مصرح له بالاتصال
-            if not asyncio.run(client.is_user_authorized()):  # استخدام asyncio.run
+            if not await client.is_user_authorized():
                 logging.error("العميل غير مصرح له. يرجى التحقق من جلسة العمل.")
-                import time
-                time.sleep(3600)  # الانتظار لمدة ساعة قبل إعادة المحاولة
+                await asyncio.sleep(3600)  # الانتظار لمدة ساعة قبل إعادة المحاولة
                 continue
 
             # الحصول على الدردشات (المحادثات) المتاحة
-            dialogs = asyncio.run(client.get_dialogs())  # استخدام asyncio.run
+            dialogs = await client.get_dialogs()
             logging.info(f"تم العثور على {len(dialogs)} دردشة.")
 
             target_bot = None
@@ -47,8 +46,7 @@ def handle_bot_sync(target_bot_name, message, button_text):
 
                 if retry_count >= max_retries:
                     logging.warning("تم الوصول إلى الحد الأقصى للمحاولات. جاري الانتظار لمدة ساعة قبل إعادة المحاولة...")
-                    import time
-                    time.sleep(3600)  # الانتظار لمدة ساعة
+                    await asyncio.sleep(3600)  # الانتظار لمدة ساعة
                     retry_count = 0  # إعادة تعيين عدد المحاولات
                 continue
 
@@ -56,22 +54,21 @@ def handle_bot_sync(target_bot_name, message, button_text):
 
             # إرسال الرسالة إلى البوت
             logging.info(f"جارٍ إرسال الرسالة '{message}' إلى {target_bot.username}...")
-            asyncio.run(client.send_message(target_bot.username, message))  # استخدام asyncio.run
+            await client.send_message(target_bot.username, message)
             logging.info(f"تم إرسال الرسالة '{message}' إلى {target_bot.username}!")
 
             # الانتظار لمدة 10 ثواني
-            import time
-            time.sleep(10)
+            await asyncio.sleep(10)
 
             # الحصول على آخر رسالة من البوت
-            messages = asyncio.run(client.get_messages(target_bot.username, limit=1))  # استخدام asyncio.run
+            messages = await client.get_messages(target_bot.username, limit=1)
             if not messages:
                 logging.warning("لم يتم العثور على رسائل في الدردشة.")
                 retry_count += 1  # زيادة عدد المحاولات
 
                 if retry_count >= max_retries:
                     logging.warning("تم الوصول إلى الحد الأقصى للمحاولات. جاري الانتظار لمدة ساعة قبل إعادة المحاولة...")
-                    time.sleep(3600)  # الانتظار لمدة ساعة
+                    await asyncio.sleep(3600)  # الانتظار لمدة ساعة
                     retry_count = 0  # إعادة تعيين عدد المحاولات
                 continue
 
@@ -90,20 +87,20 @@ def handle_bot_sync(target_bot_name, message, button_text):
                             # الضغط على الزر
                             if isinstance(button, KeyboardButtonCallback):
                                 try:
-                                    asyncio.run(client(functions.messages.GetBotCallbackAnswerRequest(
+                                    await client(functions.messages.GetBotCallbackAnswerRequest(
                                         peer=target_bot.username,
                                         msg_id=last_message.id,
                                         data=button.data
-                                    )))  # استخدام asyncio.run
+                                    ))
                                     logging.info(f"تم النقر على الزر '{button.text}'!")
                                 except Exception as e:
                                     logging.error(f"فشل في تلقي الرد بعد النقر على الزر: {e}")
                                     
                             # الانتظار لمدة 10 ثواني بعد النقر على الزر
-                            time.sleep(10)
+                            await asyncio.sleep(10)
 
                             # الحصول على الرسائل الجديدة بعد النقر على الزر
-                            new_messages = asyncio.run(client.get_messages(target_bot.username, limit=1))  # استخدام asyncio.run
+                            new_messages = await client.get_messages(target_bot.username, limit=1)
                             if new_messages and new_messages[0].id != last_message.id:
                                 logging.info("رد البوت برسالة جديدة.")
                                 logging.info(f"رد البوت: {new_messages[0].text}")
@@ -115,7 +112,7 @@ def handle_bot_sync(target_bot_name, message, button_text):
 
                                     if retry_count >= max_retries:
                                         logging.warning("تم الوصول إلى الحد الأقصى للمحاولات. جاري الانتظار لمدة ساعة قبل إعادة المحاولة...")
-                                        time.sleep(3600)  # الانتظار لمدة ساعة
+                                        await asyncio.sleep(3600)  # الانتظار لمدة ساعة
                                         retry_count = 0  # إعادة تعيين عدد المحاولات
                                     continue
                                 else:
@@ -126,14 +123,14 @@ def handle_bot_sync(target_bot_name, message, button_text):
                                         seconds = int(time_match.group(2))
                                         total_seconds = minutes * 60 + seconds + 120
                                         logging.info(f"جارٍ الانتظار لمدة {total_seconds} ثانية قبل إعادة التشغيل...")
-                                        time.sleep(total_seconds)
+                                        await asyncio.sleep(total_seconds)
                                     else:
                                         logging.warning("تعذر استخراج الوقت من الرسالة.")
                                         retry_count += 1  # زيادة عدد المحاولات
 
                                         if retry_count >= max_retries:
                                             logging.warning("تم الوصول إلى الحد الأقصى للمحاولات. جاري الانتظار لمدة ساعة قبل إعادة المحاولة...")
-                                            time.sleep(3600)  # الانتظار لمدة ساعة
+                                            await asyncio.sleep(3600)  # الانتظار لمدة ساعة
                                             retry_count = 0  # إعادة تعيين عدد المحاولات
                                         continue
                             else:
@@ -142,7 +139,7 @@ def handle_bot_sync(target_bot_name, message, button_text):
 
                                 if retry_count >= max_retries:
                                     logging.warning("تم الوصول إلى الحد الأقصى للمحاولات. جاري الانتظار لمدة ساعة قبل إعادة المحاولة...")
-                                    time.sleep(3600)  # الانتظار لمدة ساعة
+                                    await asyncio.sleep(3600)  # الانتظار لمدة ساعة
                                     retry_count = 0  # إعادة تعيين عدد المحاولات
                                 continue
 
@@ -152,7 +149,7 @@ def handle_bot_sync(target_bot_name, message, button_text):
 
                     if retry_count >= max_retries:
                         logging.warning("تم الوصول إلى الحد الأقصى للمحاولات. جاري الانتظار لمدة ساعة قبل إعادة المحاولة...")
-                        time.sleep(3600)  # الانتظار لمدة ساعة
+                        await asyncio.sleep(3600)  # الانتظار لمدة ساعة
                         retry_count = 0  # إعادة تعيين عدد المحاولات
                     continue
             else:
@@ -161,7 +158,7 @@ def handle_bot_sync(target_bot_name, message, button_text):
 
                 if retry_count >= max_retries:
                     logging.warning("تم الوصول إلى الحد الأقصى للمحاولات. جاري الانتظار لمدة ساعة قبل إعادة المحاولة...")
-                    time.sleep(3600)  # الانتظار لمدة ساعة
+                    await asyncio.sleep(3600)  # الانتظار لمدة ساعة
                     retry_count = 0  # إعادة تعيين عدد المحاولات
                 continue
 
@@ -171,14 +168,19 @@ def handle_bot_sync(target_bot_name, message, button_text):
 
             if retry_count >= max_retries:
                 logging.warning("تم الوصول إلى الحد الأقصى للمحاولات. جاري الانتظار لمدة ساعة قبل إعادة المحاولة...")
-                import time
-                time.sleep(3600)  # الانتظار لمدة ساعة
+                await asyncio.sleep(3600)  # الانتظار لمدة ساعة
                 retry_count = 0  # إعادة تعيين عدد المحاولات
             continue
 
+def handle_bot_sync(target_bot_name, message, button_text):
+    """
+    دالة تزامنية (sync) لتشغيل المهمة في خيط منفصل.
+    """
+    asyncio.run(handle_bot_async(target_bot_name, message, button_text))
+
 async def handle_bot(target_bot_name, message, button_text):
     """
-    دالة غير تزامنية (asynchronous) لتشغيل المهمة في خيط منفصل.
+    دالة غير تزامنية (async) لتشغيل المهمة في خيط منفصل.
     """
     loop = asyncio.get_running_loop()
     with ThreadPoolExecutor() as executor:
