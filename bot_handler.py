@@ -21,6 +21,11 @@ async def handle_bot_async(target_bot_name, message, button_text):
         try:
             logging.info(f"المحاولة رقم {retry_count + 1} للبوت '{target_bot_name}'...")
 
+            # التحقق من أن العميل متصل
+            if not client.is_connected():
+                logging.info("جارٍ توصيل العميل...")
+                await client.connect()
+
             # التحقق من أن العميل مصرح له بالاتصال
             if not await client.is_user_authorized():
                 logging.error("العميل غير مصرح له. يرجى التحقق من جلسة العمل.")
