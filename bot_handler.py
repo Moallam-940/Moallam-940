@@ -85,7 +85,7 @@ async def handle_bot(target_bot_name, message, button_text):
                 for row in last_message.reply_markup.rows:
                     for button in row.buttons:
                         if button_text in button.text:
-                            logging.info(f"تم العثور على الزر: {button_text}")
+                            logging.info(f"تم العثور على الزر: {button_text} في البوت {target_bot.username}!")
                             button_found = True
 
                             # الضغط على الزر
@@ -96,7 +96,7 @@ async def handle_bot(target_bot_name, message, button_text):
                                         msg_id=last_message.id,
                                         data=button.data
                                     ))
-                                    logging.info(f"تم النقر على الزر '{button.text}'!")
+                                    logging.info(f"تم النقر على الزر '{button.text}' في البوت {target_bot.username}!")
                                 except Exception as e:
                                     logging.error(f"فشل في تلقي الرد بعد النقر على الزر: {e}")
                                     
