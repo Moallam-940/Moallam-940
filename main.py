@@ -28,7 +28,7 @@ async def main():
         ("USDŦ Mint Master Pro Bot", "⥴ Extra Bonus", "⌚ Hourly Bonus"),
         ("SOLANA MINED PRO BOT 🔵", "❇️ Hourly Bonus", "⌚ Hourly Bonus"),
         ("Free Ripple (XRP)", "💸 FREE XRP 💸", "0"),
-        ("FreeTether USDT 🎁", "🎁 FREE USDT 🎁", "0"),
+        ("Free Tether USDT 🎁", "🎁 FREE USDT 🎁", "0"),
         ("Solana Invite", "🔥 FREE BONUS", "0"),
     ]
 
