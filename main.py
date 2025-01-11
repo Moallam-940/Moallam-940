@@ -15,7 +15,7 @@ async def run_bot(bot_name, message, button_text):
             await handle_bot(bot_name, message, button_text)
         except Exception as e:
             logging.error(f"حدث خطأ في تشغيل البوت {bot_name}: {e}")
-            await asyncio.sleep(60)  # الانتظار لمدة دقيقة قبل إعادة المحاولة
+            await asyncio.sleep(3600)  # الانتظار لمدة ساعة قبل إعادة المحاولة
 
 async def main():
     logging.info("جارٍ بدء خدمة البوت...")

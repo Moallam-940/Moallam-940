@@ -62,10 +62,14 @@ async def handle_bot(target_bot_name, message, button_text):
             # الانتظار لمدة 10 ثواني
             await asyncio.sleep(10)
 
-            # الحصول على آخر رسالة من البوت
-            messages = await client.get_messages(target_bot.username, limit=1)
-            if not messages:
-                logging.warning("لم يتم العثور على رسائل في الدردشة.")
+            # محاولة الحصول على آخر رسالة من البوت
+            try:
+                messages = await client.get_messages(target_bot.username, limit=1)
+                if not messages:
+                    logging.warning("لم يتم العثور على رسائل في الدردشة.")
+                    raise Exception("لم يتم العثور على رسائل في الدردشة.")
+            except Exception as e:
+                logging.error(f"فشل في الحصول على الرسائل: {e}")
                 retry_count += 1  # زيادة عدد المحاولات
 
                 if retry_count >= max_retries:
@@ -77,96 +81,72 @@ async def handle_bot(target_bot_name, message, button_text):
             last_message = messages[0]
             logging.info(f"آخر رسالة من البوت: {last_message.text}")
 
-            # إذا كان المعامل الثالث ليس 0، يتم البحث عن الزر والضغط عليه
-            if button_text != "0":
-                if last_message.reply_markup:
-                    button_found = False
-                    for row in last_message.reply_markup.rows:
-                        for button in row.buttons:
-                            if button_text in button.text:
-                                logging.info(f"تم العثور على الزر: {button_text} في البوت {target_bot.username}!")
-                                button_found = True
+            # البحث عن الزر والضغط عليه
+            if last_message.reply_markup:
+                button_found = False
+                for row in last_message.reply_markup.rows:
+                    for button in row.buttons:
+                        if button_text in button.text:
+                            logging.info(f"تم العثور على الزر: {button_text} في البوت {target_bot.username}!")
+                            button_found = True
 
-                                # الضغط على الزر
-                                if isinstance(button, KeyboardButtonCallback):
-                                    try:
-                                        await client(functions.messages.GetBotCallbackAnswerRequest(
-                                            peer=target_bot.username,
-                                            msg_id=last_message.id,
-                                            data=button.data
-                                        ))
-                                        logging.info(f"تم النقر على الزر '{button.text}' في البوت {target_bot.username}!")
-                                    except Exception as e:
-                                        logging.error(f"فشل في تلقي الرد بعد النقر على الزر: {e}")
+                            # الضغط على الزر
+                            if isinstance(button, KeyboardButtonCallback):
+                                try:
+                                    await client(functions.messages.GetBotCallbackAnswerRequest(
+                                        peer=target_bot.username,
+                                        msg_id=last_message.id,
+                                        data=button.data
+                                    ))
+                                    logging.info(f"تم النقر على الزر '{button.text}' في البوت {target_bot.username}!")
+                                except Exception as e:
+                                    logging.error(f"فشل في تلقي الرد بعد النقر على الزر: {e}")
+                                    raise e
 
-                                # الانتظار لمدة 10 ثواني بعد النقر على الزر
-                                await asyncio.sleep(10)
+                            # الانتظار لمدة 10 ثواني بعد النقر على الزر
+                            await asyncio.sleep(10)
 
-                                # الحصول على الرسائل الجديدة بعد النقر على الزر
+                            # الحصول على الرسائل الجديدة بعد النقر على الزر
+                            try:
                                 new_messages = await client.get_messages(target_bot.username, limit=1)
                                 if new_messages and new_messages[0].id != last_message.id:
                                     logging.info("رد البوت برسالة جديدة.")
                                     logging.info(f"رد البوت: {new_messages[0].text}")
 
                                     # محاولة استخراج الوقت من الرسالة
-                                    try:
-                                        time_match = re.search(
-                                            r"(?:(\d+)\s*Hours?)?\s*(?:(\d+)\s*Minutes?)?\s*(?:(\d+)\s*Seconds?)?",
-                                            new_messages[0].text,
-                                            re.IGNORECASE
-                                        )
-                                        if time_match:
-                                            hours = int(time_match.group(1) or 0)
-                                            minutes = int(time_match.group(2) or 0)
-                                            seconds = int(time_match.group(3) or 0)
-                                            total_seconds = (hours * 3600) + (minutes * 60) + seconds + 120
-                                            logging.info(f"جارٍ الانتظار لمدة {total_seconds} ثانية ({hours} ساعات، {minutes} دقائق، {seconds} ثواني) قبل إعادة التشغيل...")
-                                            await asyncio.sleep(total_seconds)
+                                    time_match = re.search(
+                                        r"(?:(\d+)\s*Hours?)?\s*(?:(\d+)\s*Minutes?)?\s*(?:(\d+)\s*Seconds?)?",
+                                        new_messages[0].text,
+                                        re.IGNORECASE
+                                    )
+                                    if time_match:
+                                        hours = int(time_match.group(1) or 0)
+                                        minutes = int(time_match.group(2) or 0)
+                                        seconds = int(time_match.group(3) or 0)
+                                        total_seconds = (hours * 3600) + (minutes * 60) + seconds + 120
+                                        logging.info(f"جارٍ الانتظار لمدة {total_seconds} ثانية ({hours} ساعات، {minutes} دقائق، {seconds} ثواني) قبل إعادة التشغيل...")
+                                        await asyncio.sleep(total_seconds)
+                                    else:
+                                        if button_text == "0":
+                                            total_seconds = 86400  # 24 ساعة
+                                            logging.info(f"جارٍ الانتظار لمدة {total_seconds} ثانية (24 ساعة) قبل إعادة التشغيل...")
                                         else:
-                                            if button_text == "0":
-                                                total_seconds = 86400  # 24 ساعة
-                                                logging.info(f"جارٍ الانتظار لمدة {total_seconds} ثانية (24 ساعة) قبل إعادة التشغيل...")
-                                            else:
-                                                total_seconds = 3600  # ساعة واحدة
-                                                logging.info(f"جارٍ الانتظار لمدة {total_seconds} ثانية (ساعة واحدة) قبل إعادة التشغيل...")
-                                            await asyncio.sleep(total_seconds)
-                                    except Exception as e:
-                                        logging.error(f"حدث خطأ أثناء استخراج الوقت: {e}")
-                                        continue
+                                            total_seconds = 3600  # ساعة واحدة
+                                            logging.info(f"جارٍ الانتظار لمدة {total_seconds} ثانية (ساعة واحدة) قبل إعادة التشغيل...")
+                                        await asyncio.sleep(total_seconds)
                                 else:
                                     logging.warning("لم يرد البوت برسالة جديدة.")
-                                    retry_count += 1  # زيادة عدد المحاولات
+                                    raise Exception("لم يرد البوت برسالة جديدة.")
+                            except Exception as e:
+                                logging.error(f"حدث خطأ أثناء الحصول على الرسائل الجديدة: {e}")
+                                raise e
 
-                                    if retry_count >= max_retries:
-                                        logging.warning("تم الوصول إلى الحد الأقصى للمحاولات. جاري الانتظار لمدة ساعة قبل إعادة المحاولة...")
-                                        await asyncio.sleep(3600)  # الانتظار لمدة ساعة
-                                        retry_count = 0  # إعادة تعيين عدد المحاولات
-                                    continue
-
-                    if not button_found:
-                        logging.warning(f"لم يتم العثور على الزر '{button_text}' في الرسالة الأخيرة.")
-                        retry_count += 1  # زيادة عدد المحاولات
-
-                        if retry_count >= max_retries:
-                            logging.warning("تم الوصول إلى الحد الأقصى للمحاولات. جاري الانتظار لمدة ساعة قبل إعادة المحاولة...")
-                            await asyncio.sleep(3600)  # الانتظار لمدة ساعة
-                            retry_count = 0  # إعادة تعيين عدد المحاولات
-                        continue
-                else:
-                    logging.warning("لم يتم العثور على أزرار في الرسالة الأخيرة.")
-                    retry_count += 1  # زيادة عدد المحاولات
-
-                    if retry_count >= max_retries:
-                        logging.warning("تم الوصول إلى الحد الأقصى للمحاولات. جاري الانتظار لمدة ساعة قبل إعادة المحاولة...")
-                        await asyncio.sleep(3600)  # الانتظار لمدة ساعة
-                        retry_count = 0  # إعادة تعيين عدد المحاولات
-                    continue
-
-            # إذا كان button_text == 0، انتظر 24 ساعة
-            if button_text == "0":
-                total_seconds = 86400  # 24 ساعة
-                logging.info(f"جارٍ الانتظار لمدة {total_seconds} ثانية (24 ساعة) قبل إعادة التشغيل...")
-                await asyncio.sleep(total_seconds)
+                if not button_found:
+                    logging.warning(f"لم يتم العثور على الزر '{button_text}' في الرسالة الأخيرة.")
+                    raise Exception(f"لم يتم العثور على الزر '{button_text}' في الرسالة الأخيرة.")
+            else:
+                logging.warning("لم يتم العثور على أزرار في الرسالة الأخيرة.")
+                raise Exception("لم يتم العثور على أزرار في الرسالة الأخيرة.")
 
         except Exception as e:
             logging.error(f"حدث خطأ: {e}")
