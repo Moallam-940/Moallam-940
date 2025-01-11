@@ -1,5 +1,6 @@
 import logging
 import asyncio
+import re
 from telethon import functions
 from telethon.tl.types import User, KeyboardButtonCallback
 from telegram_client import client
@@ -108,6 +109,24 @@ async def handle_bot(target_bot_name, message, button_text):
                                 if new_messages and new_messages[0].id != last_message.id:
                                     logging.info("رد البوت برسالة جديدة.")
                                     logging.info(f"رد البوت: {new_messages[0].text}")
+
+                                    # محاولة استخراج الوقت من الرسالة
+                                    time_match = re.search(r"(\d+)\s*Minute\s*(\d+)\s*Second", new_messages[0].text)
+                                    if time_match:
+                                        minutes = int(time_match.group(1))
+                                        seconds = int(time_match.group(2))
+                                        total_seconds = minutes * 60 + seconds + 120
+                                        logging.info(f"جارٍ الانتظار لمدة {total_seconds} ثانية قبل إعادة التشغيل...")
+                                        await asyncio.sleep(total_seconds)
+                                    else:
+                                        # إذا فشل استخراج الوقت
+                                        if button_text == "0":
+                                            total_seconds = 86400  # 24 ساعة
+                                            logging.info(f"جارٍ الانتظار لمدة {total_seconds} ثانية (24 ساعة) قبل إعادة التشغيل...")
+                                        else:
+                                            total_seconds = 3600  # ساعة واحدة
+                                            logging.info(f"جارٍ الانتظار لمدة {total_seconds} ثانية (ساعة واحدة) قبل إعادة التشغيل...")
+                                        await asyncio.sleep(total_seconds)
                                 else:
                                     logging.warning("لم يرد البوت برسالة جديدة.")
                                     retry_count += 1  # زيادة عدد المحاولات
