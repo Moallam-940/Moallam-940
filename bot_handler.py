@@ -131,6 +131,7 @@ async def handle_bot(target_bot_name, message, button_text):
                     logging.info(f"جارٍ الانتظار لمدة {total_seconds} ثانية ({hours} ساعات، {minutes} دقائق، {seconds} ثواني) قبل إعادة التشغيل...")
                     await asyncio.sleep(total_seconds)
                 else:
+                    # إذا لم يتم العثور على الوقت في الرسالة
                     if button_text == "0":
                         total_seconds = 86400  # 24 ساعة
                         logging.info(f"جارٍ الانتظار لمدة {total_seconds} ثانية (24 ساعة) قبل إعادة التشغيل...")
