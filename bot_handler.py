@@ -109,39 +109,32 @@ async def handle_bot(target_bot_name, message, button_text):
                                 if new_messages and new_messages[0].id != last_message.id:
                                     logging.info("رد البوت برسالة جديدة.")
                                     logging.info(f"رد البوت: {new_messages[0].text}")
-# محاولة استخراج الوقت من الرسالة
-time_match = re.search(
-    r"(?:(\d+)\s*Hours?)?\s*(?:(\d+)\s*Minutes?)?\s*(?:(\d+)\s*Seconds?)?",
-    new_messages[0].text,
-    re.IGNORECASE
-)
 
-if time_match:
-    hours = int(time_match.group(1) or 0)  # إذا لم يتم العثور على ساعات، استخدم 0
-    minutes = int(time_match.group(2) or 0)  # إذا لم يتم العثور على دقائق، استخدم 0
-    seconds = int(time_match.group(3) or 0)  # إذا لم يتم العثور على ثواني، استخدم 0
-
-    # حساب الوقت الإجمالي بالثواني
-    total_seconds = (hours * 3600) + (minutes * 60) + seconds + 120  # إضافة 120 ثانية كهامش
-    logging.info(f"جارٍ الانتظار لمدة {total_seconds} ثانية ({hours} ساعات، {minutes} دقائق، {seconds} ثواني) قبل إعادة التشغيل...")
-    await asyncio.sleep(total_seconds)
-else:
-    # إذا فشل استخراج الوقت
-    if button_text == "0":
-        total_seconds = 86400  # 24 ساعة
-        logging.info(f"جارٍ الانتظار لمدة {total_seconds} ثانية (24 ساعة) قبل إعادة التشغيل...")
-    else:
-        total_seconds = 3600  # ساعة واحدة
-        logging.info(f"جارٍ الانتظار لمدة {total_seconds} ثانية (ساعة واحدة) قبل إعادة التشغيل...")
-    await asyncio.sleep(total_seconds)
-                                        # إذا فشل استخراج الوقت
-                                        if button_text == "0":
-                                            total_seconds = 86400  # 24 ساعة
-                                            logging.info(f"جارٍ الانتظار لمدة {total_seconds} ثانية (24 ساعة) قبل إعادة التشغيل...")
+                                    # محاولة استخراج الوقت من الرسالة
+                                    try:
+                                        time_match = re.search(
+                                            r"(?:(\d+)\s*Hours?)?\s*(?:(\d+)\s*Minutes?)?\s*(?:(\d+)\s*Seconds?)?",
+                                            new_messages[0].text,
+                                            re.IGNORECASE
+                                        )
+                                        if time_match:
+                                            hours = int(time_match.group(1) or 0)
+                                            minutes = int(time_match.group(2) or 0)
+                                            seconds = int(time_match.group(3) or 0)
+                                            total_seconds = (hours * 3600) + (minutes * 60) + seconds + 120
+                                            logging.info(f"جارٍ الانتظار لمدة {total_seconds} ثانية ({hours} ساعات، {minutes} دقائق، {seconds} ثواني) قبل إعادة التشغيل...")
+                                            await asyncio.sleep(total_seconds)
                                         else:
-                                            total_seconds = 3600  # ساعة واحدة
-                                            logging.info(f"جارٍ الانتظار لمدة {total_seconds} ثانية (ساعة واحدة) قبل إعادة التشغيل...")
-                                        await asyncio.sleep(total_seconds)
+                                            if button_text == "0":
+                                                total_seconds = 86400  # 24 ساعة
+                                                logging.info(f"جارٍ الانتظار لمدة {total_seconds} ثانية (24 ساعة) قبل إعادة التشغيل...")
+                                            else:
+                                                total_seconds = 3600  # ساعة واحدة
+                                                logging.info(f"جارٍ الانتظار لمدة {total_seconds} ثانية (ساعة واحدة) قبل إعادة التشغيل...")
+                                            await asyncio.sleep(total_seconds)
+                                    except Exception as e:
+                                        logging.error(f"حدث خطأ أثناء استخراج الوقت: {e}")
+                                        continue
                                 else:
                                     logging.warning("لم يرد البوت برسالة جديدة.")
                                     retry_count += 1  # زيادة عدد المحاولات
