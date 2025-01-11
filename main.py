@@ -13,10 +13,10 @@ async def main():
     task1 = asyncio.create_task(handle_bot("Daily (USDT) Claim", "🆔 Account Balance", "🔥 Huge Extra Bonus 🔥"))
     task2 = asyncio.create_task(handle_bot("Bitcoin (BTC) Cloud Pool", "Get Coin 🎁", "🎁 Daily Bonus 🎁"))
     task3 = asyncio.create_task(handle_bot("DOGS MINING BOT 🦴", "FREE BONUS 🐶", "⌚ Hourly Bonus"))
-    task4 = asyncio.create_task(handle_bot("USDT Mint Master Pro Bot", "⥴ Extra Bonus", "⌚ Hourly Bonus"))
+    task4 = asyncio.create_task(handle_bot("USDŦ Mint Master Pro Bot", "⥴ Extra Bonus", "⌚ Hourly Bonus"))
     task5 = asyncio.create_task(handle_bot("SOLANA MINED PRO BOT 🔵", "❇️ Hourly Bonus", "⌚ Hourly Bonus"))
     task6 = asyncio.create_task(handle_bot("Free Ripple (XRP)", "💸 FREE XRP 💸", "0"))
-    task7 = asyncio.create_task(handle_bot("FreeTether USDT 🎁", "🎁 FREE USDT 🎁", "0"))
+    task7 = asyncio.create_task(handle_bot("Free Tether USDT 🎁", "🎁 FREE USDT 🎁", "0"))
     task8 = asyncio.create_task(handle_bot("Solana Invite", "🔥 FREE BONUS", "0"))
 
     # تشغيل تطبيق Quart
