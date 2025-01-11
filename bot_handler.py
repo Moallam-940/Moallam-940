@@ -119,14 +119,14 @@ async def handle_bot(target_bot_name, message, button_text):
             # محاولة استخراج الوقت من الرسالة
             try:
                 time_match = re.search(
-                    r"(?:(\d+)\s*Hours?)?\s*(?:(\d+)\s*Minutes?)?\s*(?:(\d+)\s*Seconds?)?",
+                    r"(\d+)\s*hours?,\s*(\d+)\s*minutes?,\s*and\s*(\d+)\s*seconds?",
                     last_message.text,
                     re.IGNORECASE
                 )
                 if time_match:
-                    hours = int(time_match.group(1) or 0)
-                    minutes = int(time_match.group(2) or 0)
-                    seconds = int(time_match.group(3) or 0)
+                    hours = int(time_match.group(1))
+                    minutes = int(time_match.group(2))
+                    seconds = int(time_match.group(3))
                     total_seconds = (hours * 3600) + (minutes * 60) + seconds
                     logging.info(f"جارٍ الانتظار لمدة {total_seconds} ثانية ({hours} ساعات، {minutes} دقائق، {seconds} ثواني) قبل إعادة التشغيل...")
                     await asyncio.sleep(total_seconds)
