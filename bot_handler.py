@@ -40,8 +40,6 @@ async def handle_bot(target_bot_name, message, button_text):
                 if isinstance(dialog.entity, User) and dialog.entity.bot and dialog.name == target_bot_name:
                     target_bot = dialog.entity
                     break
-                elif isinstance(dialog.entity, User) and dialog.entity.bot:
-                    logging.info(f"تم العثور على بوت: {dialog.name} (اسم المستخدم: {dialog.entity.username})")
 
             # إذا لم يتم العثور على البوت
             if not target_bot:
