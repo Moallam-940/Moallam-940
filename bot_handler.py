@@ -115,33 +115,32 @@ async def handle_bot(target_bot_name, message, button_text):
                     raise Exception(f"لم يتم العثور على الزر '{button_text}' في الرسالة الأخيرة.")
             else:
                 logging.info("تم تخطي النقر على الزر لأن button_text == '0'.")
-
-            # محاولة استخراج الوقت من الرسالة
-            try:
-                time_match = re.search(
-                    r"(?:(\d+)\s*Hours?)?\s*(?:(\d+)\s*Minutes?)?\s*(?:(\d+)\s*Seconds?)?",
-                    last_message.text,
-                    re.IGNORECASE
-                )
-                if time_match:
-                    hours = int(time_match.group(1) or 0)
-                    minutes = int(time_match.group(2) or 0)
-                    seconds = int(time_match.group(3) or 0)
-                    total_seconds = (hours * 3600) + (minutes * 60) + seconds + 120
-                    logging.info(f"جارٍ الانتظار لمدة {total_seconds} ثانية ({hours} ساعات، {minutes} دقائق، {seconds} ثواني) قبل إعادة التشغيل...")
-                    await asyncio.sleep(total_seconds)
-                else:
-                    # إذا لم يتم العثور على الوقت في الرسالة
-                    if button_text == "0":
-                        total_seconds = 86400  # 24 ساعة
-                        logging.info(f"جارٍ الانتظار لمدة {total_seconds} ثانية (24 ساعة) قبل إعادة التشغيل...")
-                    else:
-                        total_seconds = 3600  # ساعة واحدة
-                        logging.info(f"جارٍ الانتظار لمدة {total_seconds} ثانية (ساعة واحدة) قبل إعادة التشغيل...")
-                    await asyncio.sleep(total_seconds)
-            except Exception as e:
-                logging.error(f"حدث خطأ أثناء استخراج الوقت: {e}")
-                raise e
+# محاولة استخراج الوقت من الرسالة
+try:
+    time_match = re.search(
+        r"(?:(\d+)\s*Hours?)?\s*(?:(\d+)\s*Minutes?)?\s*(?:(\d+)\s*Seconds?)?",
+        last_message.text,
+        re.IGNORECASE
+    )
+    if time_match:
+        hours = int(time_match.group(1) or 0)
+        minutes = int(time_match.group(2) or 0)
+        seconds = int(time_match.group(3) or 0)
+        total_seconds = (hours * 3600) + (minutes * 60) + seconds
+        logging.info(f"جارٍ الانتظار لمدة {total_seconds} ثانية ({hours} ساعات، {minutes} دقائق، {seconds} ثواني) قبل إعادة التشغيل...")
+        await asyncio.sleep(total_seconds)
+    else:
+        # إذا لم يتم العثور على الوقت في الرسالة
+        if button_text == "0":
+            total_seconds = 86400  # 24 ساعة
+            logging.info(f"جارٍ الانتظار لمدة {total_seconds} ثانية (24 ساعة) قبل إعادة التشغيل...")
+        else:
+            total_seconds = 3600  # ساعة واحدة
+            logging.info(f"جارٍ الانتظار لمدة {total_seconds} ثانية (ساعة واحدة) قبل إعادة التشغيل...")
+        await asyncio.sleep(total_seconds)
+except Exception as e:
+    logging.error(f"حدث خطأ أثناء استخراج الوقت: {e}")
+    raise e
 
         except Exception as e:
             logging.error(f"حدث خطأ: {e}")
