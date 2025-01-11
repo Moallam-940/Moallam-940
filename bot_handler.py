@@ -81,8 +81,8 @@ async def handle_bot(target_bot_name, message, button_text):
             last_message = messages[0]
             logging.info(f"آخر رسالة من البوت: {last_message.text}")
 
-            # البحث عن الزر والضغط عليه
-            if last_message.reply_markup:
+            # البحث عن الزر والضغط عليه (فقط إذا كان button_text ليس "0")
+            if button_text != "0" and last_message.reply_markup:
                 button_found = False
                 for row in last_message.reply_markup.rows:
                     for button in row.buttons:
@@ -100,53 +100,47 @@ async def handle_bot(target_bot_name, message, button_text):
                                     ))
                                     logging.info(f"تم النقر على الزر '{button.text}' في البوت {target_bot.username}!")
                                 except Exception as e:
-                                    logging.error(f"فشل في تلقي الرد بعد النقر على الزر: {e}")
+                                    logging.error(f"فشل في النقر على الزر: {e}")
                                     raise e
 
-                            # الانتظار لمدة 10 ثواني بعد النقر على الزر
+                            # الانتظار لمدة 10 ثواني بعد النقر على الزر (دون انتظار رد)
                             await asyncio.sleep(10)
+                            break  # الخروج من الحلقة بعد النقر على الزر
 
-                            # الحصول على الرسائل الجديدة بعد النقر على الزر
-                            try:
-                                new_messages = await client.get_messages(target_bot.username, limit=1)
-                                if new_messages and new_messages[0].id != last_message.id:
-                                    logging.info("رد البوت برسالة جديدة.")
-                                    logging.info(f"رد البوت: {new_messages[0].text}")
-
-                                    # محاولة استخراج الوقت من الرسالة
-                                    time_match = re.search(
-                                        r"(?:(\d+)\s*Hours?)?\s*(?:(\d+)\s*Minutes?)?\s*(?:(\d+)\s*Seconds?)?",
-                                        new_messages[0].text,
-                                        re.IGNORECASE
-                                    )
-                                    if time_match:
-                                        hours = int(time_match.group(1) or 0)
-                                        minutes = int(time_match.group(2) or 0)
-                                        seconds = int(time_match.group(3) or 0)
-                                        total_seconds = (hours * 3600) + (minutes * 60) + seconds + 120
-                                        logging.info(f"جارٍ الانتظار لمدة {total_seconds} ثانية ({hours} ساعات، {minutes} دقائق، {seconds} ثواني) قبل إعادة التشغيل...")
-                                        await asyncio.sleep(total_seconds)
-                                    else:
-                                        if button_text == "0":
-                                            total_seconds = 86400  # 24 ساعة
-                                            logging.info(f"جارٍ الانتظار لمدة {total_seconds} ثانية (24 ساعة) قبل إعادة التشغيل...")
-                                        else:
-                                            total_seconds = 3600  # ساعة واحدة
-                                            logging.info(f"جارٍ الانتظار لمدة {total_seconds} ثانية (ساعة واحدة) قبل إعادة التشغيل...")
-                                        await asyncio.sleep(total_seconds)
-                                else:
-                                    logging.warning("لم يرد البوت برسالة جديدة.")
-                                    raise Exception("لم يرد البوت برسالة جديدة.")
-                            except Exception as e:
-                                logging.error(f"حدث خطأ أثناء الحصول على الرسائل الجديدة: {e}")
-                                raise e
+                    if button_found:
+                        break  # الخروج من الحلقة الخارجية بعد النقر على الزر
 
                 if not button_found:
                     logging.warning(f"لم يتم العثور على الزر '{button_text}' في الرسالة الأخيرة.")
                     raise Exception(f"لم يتم العثور على الزر '{button_text}' في الرسالة الأخيرة.")
             else:
-                logging.warning("لم يتم العثور على أزرار في الرسالة الأخيرة.")
-                raise Exception("لم يتم العثور على أزرار في الرسالة الأخيرة.")
+                logging.info("تم تخطي النقر على الزر لأن button_text == '0'.")
+
+            # محاولة استخراج الوقت من الرسالة
+            try:
+                time_match = re.search(
+                    r"(?:(\d+)\s*Hours?)?\s*(?:(\d+)\s*Minutes?)?\s*(?:(\d+)\s*Seconds?)?",
+                    last_message.text,
+                    re.IGNORECASE
+                )
+                if time_match:
+                    hours = int(time_match.group(1) or 0)
+                    minutes = int(time_match.group(2) or 0)
+                    seconds = int(time_match.group(3) or 0)
+                    total_seconds = (hours * 3600) + (minutes * 60) + seconds + 120
+                    logging.info(f"جارٍ الانتظار لمدة {total_seconds} ثانية ({hours} ساعات، {minutes} دقائق، {seconds} ثواني) قبل إعادة التشغيل...")
+                    await asyncio.sleep(total_seconds)
+                else:
+                    if button_text == "0":
+                        total_seconds = 86400  # 24 ساعة
+                        logging.info(f"جارٍ الانتظار لمدة {total_seconds} ثانية (24 ساعة) قبل إعادة التشغيل...")
+                    else:
+                        total_seconds = 3600  # ساعة واحدة
+                        logging.info(f"جارٍ الانتظار لمدة {total_seconds} ثانية (ساعة واحدة) قبل إعادة التشغيل...")
+                    await asyncio.sleep(total_seconds)
+            except Exception as e:
+                logging.error(f"حدث خطأ أثناء استخراج الوقت: {e}")
+                raise e
 
         except Exception as e:
             logging.error(f"حدث خطأ: {e}")

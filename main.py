@@ -25,7 +25,7 @@ async def main():
         ("Daily (USDT) Claim", "🆔 Account Balance", "🔥 Huge Extra Bonus 🔥"),
         ("Bitcoin (BTC) Cloud Pool", "Get Coin 🎁", "🎁 Daily Bonus 🎁"),
         ("DOGS MINING BOT 🦴", "FREE BONUS 🐶", "⌚ Hourly Bonus"),
-        ("USDT Mint Master Pro Bot", "⥴ Extra Bonus", "⌚ Hourly Bonus"),
+        ("USDŦ Mint Master Pro Bot", "⥴ Extra Bonus", "⌚ Hourly Bonus"),
         ("SOLANA MINED PRO BOT 🔵", "❇️ Hourly Bonus", "⌚ Hourly Bonus"),
         ("Free Ripple (XRP)", "💸 FREE XRP 💸", "0"),
         ("FreeTether USDT 🎁", "🎁 FREE USDT 🎁", "0"),
