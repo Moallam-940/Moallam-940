@@ -31,6 +31,7 @@ async def main():
         ("Free Tether USDT 🎁", "🎁 FREE USDT 🎁", "0"),
         ("Solana Invite", "🔥 FREE BONUS", "0"),
 ("Tron Miner Hub Pro Bot ♦️", "⇢ Claim Bonus", "0"),
+("SOLANA MINED PRO BOT 🔵", "❇️ Hourly Bonus", "0"),
     ]
 
     # تشغيل كل بوت في مهمة منفصلة
