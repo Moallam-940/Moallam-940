@@ -4,7 +4,6 @@ import re
 from telethon import functions
 from telethon.tl.types import KeyboardButtonCallback
 from telegram_client import client  # تأكد من استيراد العميل الخاص بك (Client)
-
 async def extract_wait_time(message_text, default_wait):
     """
     دالة لاستخراج وقت الانتظار من نص الرسالة.
