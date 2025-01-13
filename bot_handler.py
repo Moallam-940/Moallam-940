@@ -58,7 +58,7 @@ async def handle_bot(bot_url, message, button_text, default_wait):
         wait_time = None
         if last_message.text:
             # تعديل التعبير العادي ليشمل الساعات، الدقائق، والثواني
-            match = re.search(r"(?:(\d+)\s*(?:hour|hours?)?)?\s*(\d+)\s*(?:minute|minutes?)?,?\s*(\d+)\s*(?:second|seconds?)?", last_message.text, re.IGNORECASE)
+            match = re.search(r"(?:(\d+)\s*(?:hour|hours?)\s*,?\s*)?(\d+)\s*(?:minute|minutes?)\s*,?\s*(\d+)\s*(?:second|seconds?)", last_message.text, re.IGNORECASE)
             if match:
                 hours = int(match.group(1) or 0)  # تعيين الساعات إلى صفر إذا لم توجد
                 minutes = int(match.group(2) or 0)  # تعيين الدقائق إلى صفر إذا لم توجد
@@ -74,4 +74,6 @@ async def handle_bot(bot_url, message, button_text, default_wait):
         await asyncio.sleep(wait_time)
 
     except Exception as e:
-        logging.error(f"حدث خطأ أثناء التعامل مع البوت {bot_url}: {e}")
+        # هنا يمكن إلغاء تسجيل الأخطاء
+        # logging.error(f"حدث خطأ أثناء التعامل مع البوت {bot_url}: {e}")
+        pass  # ببساطة لا نفعل شيئاً إذا حدث خطأ
