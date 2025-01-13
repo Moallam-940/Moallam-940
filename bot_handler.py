@@ -1,11 +1,15 @@
 import logging
 import asyncio
+import re
 from telethon import functions
 from telethon.tl.types import KeyboardButtonCallback
 from telegram_client import client  # تأكد من استيراد العميل الخاص بك (Client)
 
 # تهيئة السجل (Logging)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+# متغير لتخزين التقرير
+bot_report = []
 
 async def handle_bot(bot_url, message, button_text):
     """
@@ -15,6 +19,7 @@ async def handle_bot(bot_url, message, button_text):
 
     retry_count = 0  # عدد مرات إعادة المحاولة
     max_retries = 1  # الحد الأقصى لعدد المحاولات
+    bot_name = bot_url.split("/")[-1]  # استخراج اسم البوت من الرابط
 
     while True:
         try:
@@ -32,17 +37,16 @@ async def handle_bot(bot_url, message, button_text):
                 continue
 
             # فتح الرابط بشكل مباشر عبر الرابط الذي تم تمريره
-            bot_username = bot_url.split("/")[-1]  # استخراج اسم البوت من الرابط
-            logging.info(f"جارٍ إرسال الرسالة '{message}' إلى {bot_username}...")
-            await client.send_message(bot_username, message)
-            logging.info(f"تم إرسال الرسالة '{message}' إلى {bot_username}!")
+            logging.info(f"جارٍ إرسال الرسالة '{message}' إلى {bot_name}...")
+            await client.send_message(bot_name, message)
+            logging.info(f"تم إرسال الرسالة '{message}' إلى {bot_name}!")
 
             # الانتظار لمدة 10 ثوانٍ
             await asyncio.sleep(10)
 
             # محاولة الحصول على آخر رسالة من البوت
             try:
-                messages = await client.get_messages(bot_username, limit=1)
+                messages = await client.get_messages(bot_name, limit=1)
                 if not messages:
                     logging.warning("لم يتم العثور على رسائل في الدردشة.")
                     raise Exception("لم يتم العثور على رسائل في الدردشة.")
@@ -65,18 +69,18 @@ async def handle_bot(bot_url, message, button_text):
                 for row in last_message.reply_markup.rows:
                     for button in row.buttons:
                         if button_text in button.text:
-                            logging.info(f"تم العثور على الزر: {button_text} في البوت {bot_username}!")
+                            logging.info(f"تم العثور على الزر: {button_text} في البوت {bot_name}!")
                             button_found = True
 
                             # الضغط على الزر
                             if isinstance(button, KeyboardButtonCallback):
                                 try:
                                     await client(functions.messages.GetBotCallbackAnswerRequest(
-                                        peer=bot_username,
+                                        peer=bot_name,
                                         msg_id=last_message.id,
                                         data=button.data
                                     ))
-                                    logging.info(f"تم النقر على الزر '{button.text}' في البوت {bot_username}!")
+                                    logging.info(f"تم النقر على الزر '{button.text}' في البوت {bot_name}!")
                                 except Exception as e:
                                     logging.error(f"فشل في النقر على الزر: {e}")
                                     raise e
@@ -121,6 +125,9 @@ async def handle_bot(bot_url, message, button_text):
                 logging.error(f"حدث خطأ أثناء استخراج الوقت: {e}")
                 raise e
 
+            # إضافة تقرير البوت إلى القائمة
+            bot_report.append(f"بوت: {bot_name}, مدة الانتظار: {total_seconds} ثانية")
+
         except Exception as e:
             logging.error(f"حدث خطأ: {e}")
             retry_count += 1  # زيادة عدد المحاولات
@@ -130,3 +137,9 @@ async def handle_bot(bot_url, message, button_text):
                 await asyncio.sleep(3600)  # الانتظار لمدة ساعة
                 retry_count = 0  # إعادة تعيين عدد المحاولات
             continue
+
+# دالة لطباعة التقرير بعد اكتمال العمل
+async def print_report():
+    logging.info("\n\n----- تقرير البوتات -----")
+    for report in bot_report:
+        logging.info(report)
