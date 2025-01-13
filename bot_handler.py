@@ -57,7 +57,6 @@ async def handle_bot(bot_url, message, button_text, default_wait):
 
 # استخراج وقت الانتظار من الرسالة
 wait_time = None
-last_message_text = "🕐 You can claim your bonus again in 16 hours, 29 minutes, and 26 seconds."
 
 if last_message.text:
     # تعديل التعبير العادي ليشمل الساعات، الدقائق، والثواني مع المسافات والفواصل
