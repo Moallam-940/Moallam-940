@@ -37,7 +37,6 @@ async def handle_bot(bot_url, message, button_text, default_wait):
                                 ))
                                 logging.info(f"تم النقر على الزر '{button.text}' في البوت {bot_url}.")
                             except Exception as e:
-                                #logging.warning(f"فشل في النقر على الزر: {e}. سيتم تجاهل الخطأ والمتابعة.")
                                 pass
                         button_clicked = True
                         break
@@ -60,23 +59,28 @@ async def handle_bot(bot_url, message, button_text, default_wait):
 
         if last_message.text:
             try:
-                # تعديل التعبير العادي ليشمل الساعات، الدقائق، والثواني مع المسافات والفواصل
-                match = re.search(r"(?:(\d+)\s*(?:hour|hours?)\s*,?\s*)?(?:(\d+)\s*(?:minute|minutes?)\s*,?\s*)?(\d+)\s*(?:second|seconds?)\s*(?:and)?\s*(\d+)?\s*(?:minute|minutes?)?", last_message.text, re.IGNORECASE)
+                # تعديل التعبير العادي للتعامل مع الرسائل المختلفة
+                match = re.search(r"(?:(\d+)\s*(?:hour|hours?)\s*,?\s*)?(?:(\d+)\s*(?:minute|minutes?)\s*,?\s*)?(\d+)\s*(?:second|seconds?)|(\d+)\s*(?:minute|minutes?)\s*(\d+)\s*(?:sec|seconds?)", last_message.text, re.IGNORECASE)
+                
                 if match:
                     hours = int(match.group(1) or 0)  # تعيين الساعات إلى صفر إذا لم توجد
                     minutes = int(match.group(2) or 0)  # تعيين الدقائق إلى صفر إذا لم توجد
                     seconds = int(match.group(3) or 0)  # تعيين الثواني إلى صفر إذا لم توجد
+                    
+                    # في حال كان هناك نموذج ثواني ودقائق مع "sec"
+                    if match.group(4) and match.group(5):
+                        minutes = int(match.group(4) or 0)
+                        seconds = int(match.group(5) or 0)
+
                     wait_time = hours * 3600 + minutes * 60 + seconds
-                    if match.group(4):  # في حال وجود دقائق إضافية بعد "and"
-                        wait_time += int(match.group(4)) * 60
+
+                # تصحيح حالة عدم وجود وقت معين، تعيين المهلة الافتراضية
+                if wait_time is None:
+                    wait_time = int(default_wait)
 
             except Exception as e:
                 # هنا يمكن إلغاء تسجيل الأخطاء
                 pass  # ببساطة لا نفعل شيئاً إذا حدث خطأ
-
-        # تعيين المهلة الافتراضية إذا لم يتم العثور على وقت
-        if wait_time is None:
-            wait_time = int(default_wait)
 
         # سجل العملية
         logging.info(f"تقرير البوت {bot_url}: المهلة المعينة = {wait_time} ثانية.")
