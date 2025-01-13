@@ -1,12 +1,13 @@
 import logging
 import asyncio
+import re
 from telethon import functions
 from telethon.tl.types import KeyboardButtonCallback
 from telegram_client import client  # تأكد من استيراد العميل الخاص بك (Client)
 
 async def extract_wait_time(message_text, default_wait):
     """
-    دالة لاستخراج وقت الانتظار من نص الرسالة بطريقة مختلفة.
+    دالة لاستخراج وقت الانتظار من نص الرسالة بطريقة جديدة.
     """
     try:
         # تحويل النص إلى حروف صغيرة لتسهيل البحث
@@ -17,26 +18,21 @@ async def extract_wait_time(message_text, default_wait):
         minutes = 0
         seconds = 0
 
-        # تقسيم النص إلى كلمات
-        words = message_text.split()
+        # تقسيم النص إلى أجزاء باستخدام الفواصل والكلمات الرئيسية
+        parts = re.split(r"[\s,]+", message_text)
 
-        # البحث عن الساعات
-        if "hour" in words or "hours" in words:
-            index = words.index("hour") if "hour" in words else words.index("hours")
-            if index > 0 and words[index - 1].isdigit():
-                hours = int(words[index - 1])
-
-        # البحث عن الدقائق
-        if "minute" in words or "minutes" in words:
-            index = words.index("minute") if "minute" in words else words.index("minutes")
-            if index > 0 and words[index - 1].isdigit():
-                minutes = int(words[index - 1])
-
-        # البحث عن الثواني
-        if "second" in words or "seconds" in words:
-            index = words.index("second") if "second" in words else words.index("seconds")
-            if index > 0 and words[index - 1].isdigit():
-                seconds = int(words[index - 1])
+        # البحث عن الأرقام المرتبطة بالكلمات الرئيسية
+        for i, part in enumerate(parts):
+            if part.isdigit():
+                # إذا كان الجزء رقمًا، نتحقق من الجزء التالي
+                if i + 1 < len(parts):
+                    next_part = parts[i + 1]
+                    if "hour" in next_part or "hours" in next_part:
+                        hours = int(part)
+                    elif "minute" in next_part or "minutes" in next_part:
+                        minutes = int(part)
+                    elif "second" in next_part or "seconds" in next_part:
+                        seconds = int(part)
 
         # حساب وقت الانتظار الكلي بالثواني
         wait_time = hours * 3600 + minutes * 60 + seconds
