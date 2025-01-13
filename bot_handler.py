@@ -57,9 +57,12 @@ async def handle_bot(bot_url, message, button_text, default_wait):
         # استخراج وقت الانتظار من الرسالة
         wait_time = None
         if last_message.text:
-            match = re.search(r"(\d+)\s*hours?,\s*(\d+)\s*minutes?,\s*(\d+)\s*seconds?", last_message.text, re.IGNORECASE)
+            # تعديل التعبير العادي ليشمل الساعات، الدقائق، والثواني
+            match = re.search(r"(?:(\d+)\s*(?:hour|hours?)?)?\s*(\d+)\s*(?:minute|minutes?)?,?\s*(\d+)\s*(?:second|seconds?)?", last_message.text, re.IGNORECASE)
             if match:
-                hours, minutes, seconds = map(int, match.groups())
+                hours = int(match.group(1) or 0)  # تعيين الساعات إلى صفر إذا لم توجد
+                minutes = int(match.group(2) or 0)  # تعيين الدقائق إلى صفر إذا لم توجد
+                seconds = int(match.group(3) or 0)  # تعيين الثواني إلى صفر إذا لم توجد
                 wait_time = hours * 3600 + minutes * 60 + seconds
 
         # تعيين المهلة الافتراضية إذا لم يتم العثور على وقت
