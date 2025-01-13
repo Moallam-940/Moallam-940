@@ -22,16 +22,16 @@ async def main():
 
     # إنشاء المهام للتعامل مع البوتات
     bots = [
-        ("Daily (USDT) Claim", "🆔 Account Balance", "🔥 Huge Extra Bonus 🔥"),
-        ("Bitcoin (BTC) Cloud Pool", "Get Coin 🎁", "🎁 Daily Bonus 🎁"),
-        ("DOGS MINING BOT 🦴", "FREE BONUS 🐶", "⌚ Hourly Bonus"),
-        ("USDŦ Mint Master Pro Bot", "⥴ Extra Bonus", "⌚ Hourly Bonus"),
-        ("SOLANA MINED PRO BOT 🔵", "❇️ Hourly Bonus", "⌚ Hourly Bonus"),
-        ("Free Ripple (XRP)", "💸 FREE XRP 💸", "0"),
-        ("Free Tether USDT 🎁", "🎁 FREE USDT 🎁", "0"),
-        ("Solana Invite", "🔥 FREE BONUS", "0"),
-("Tron Miner Hub Pro Bot ♦️", "⇢ Claim Bonus", "0"),
-("SOLANA MINED PRO BOT 🔵", "❇️ Hourly Bonus", "0"),
+        ("@DailyUSDTClaimBot", "🆔 Account Balance", "🔥 Huge Extra Bonus 🔥"),
+        ("@BitcoinBTCCloudPoolBot", "Get Coin 🎁", "🎁 Daily Bonus 🎁"),
+        ("@DOGSMININGPROBOT", "FREE BONUS 🐶", "⌚ Hourly Bonus"),
+        ("@USDTMintMasterProV2Bot", "⥴ Extra Bonus", "⌚ Hourly Bonus"),
+        ("@SOLMineProbot", "❇️ Hourly Bonus", "⌚ Hourly Bonus"),
+        ("@FreeRipplexrpvipBot", "💸 FREE XRP 💸", "0"),
+        ("@FreeTetherV3Bot", "🎁 FREE USDT 🎁", "0"),
+        ("@SolanaInviteBot", "🔥 FREE BONUS", "0"),
+("@TronMinerHubProbot", "⇢ Claim Bonus", "0"),
+("@SOLMinedProbot", "❇️ Hourly Bonus", "0"),
     ]
 
     # تشغيل كل بوت في مهمة منفصلة
