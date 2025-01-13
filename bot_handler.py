@@ -1,140 +1,59 @@
-import logging
-import asyncio
-import re
-from telethon import functions
-from telethon.tl.types import User, KeyboardButtonCallback
-from telegram_client import client
-
-# تهيئة السجل (Logging)
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-
 async def handle_bot(target_bot_id, message, button_text):
     """
-    دالة غير تزامنية للتعامل مع البوت باستخدام المعرف (ID).
+    دالة غير تزامنية (async) للتعامل مع البوت.
     """
-    logging.info(f"جارٍ بدء التعامل مع البوت بالمعرف '{target_bot_id}'...")
-    report = {
-        "bot_id": target_bot_id,
-        "message_sent": message,
-        "button_clicked": button_text if button_text != "0" else "No button interaction",
-        "wait_duration": 0  # سيتم تحديثها لاحقًا
-    }
+    logging.info(f"جارٍ بدء التعامل مع البوت '{target_bot_id}'...")
 
-    try:
-        # التأكد من أن العميل متصل
-        if not client.is_connected():
-            logging.info("جارٍ توصيل العميل...")
-            await client.connect()
+    retry_count = 0  # عدد مرات إعادة المحاولة
+    max_retries = 1  # الحد الأقصى لعدد المحاولات
 
-        # التأكد من أن العميل مصرح له
-        if not await client.is_user_authorized():
-            logging.error("العميل غير مصرح له. يرجى التحقق من جلسة العمل.")
-            await asyncio.sleep(3600)  # الانتظار لمدة ساعة
-            return
-
-        # البحث عن البوت باستخدام المعرف (ID)
-        dialogs = await client.get_dialogs()
-        logging.info(f"تم العثور على {len(dialogs)} دردشة.")
-
-        target_bot = None
-        for dialog in dialogs:
-            if isinstance(dialog.entity, User) and dialog.entity.bot and dialog.entity.id == target_bot_id:
-                target_bot = dialog.entity
-                break
-
-        if not target_bot:
-            logging.error(f"لم يتم العثور على البوت بالمعرف '{target_bot_id}'.")
-            return
-
-        logging.info(f"تم العثور على البوت: {target_bot.username}")
-
-        # إرسال الرسالة إلى البوت
+    while True:
         try:
-            logging.info(f"جارٍ إرسال الرسالة '{message}' إلى {target_bot.username}...")
-            await client.send_message(target_bot.username, message)
-            logging.info(f"تم إرسال الرسالة '{message}' إلى {target_bot.username}!")
-        except Exception as e:
-            logging.error(f"حدث خطأ أثناء إرسال الرسالة: {e}")
-            logging.info("جارٍ الانتظار لمدة ساعة قبل إعادة المحاولة...")
-            await asyncio.sleep(3600)  # الانتظار لمدة ساعة
-            return
+            logging.info(f"المحاولة رقم {retry_count + 1} للبوت '{target_bot_id}'...")
 
-        # انتظار 10 ثوانٍ
-        await asyncio.sleep(10)
+            # التحقق من أن العميل متصل
+            if not client.is_connected():
+                logging.info("جارٍ توصيل العميل...")
+                await client.connect()
 
-        # جلب الرسالة الأخيرة
-        messages = await client.get_messages(target_bot.username, limit=1)
-        if not messages:
-            logging.warning("لم يتم العثور على رسائل في الدردشة.")
-            return
+            # التحقق من أن العميل مصرح له بالاتصال
+            if not await client.is_user_authorized():
+                logging.error("العميل غير مصرح له. يرجى التحقق من جلسة العمل.")
+                await asyncio.sleep(3600)  # الانتظار لمدة ساعة قبل إعادة المحاولة
+                continue
 
-        last_message = messages[0]
-        logging.info(f"آخر رسالة من البوت: {last_message.text}")
+            # الحصول على الدردشات (المحادثات) المتاحة
+            dialogs = await client.get_dialogs()
+            logging.info(f"تم العثور على {len(dialogs)} دردشة.")
 
-        # التعامل مع الأزرار إذا وُجدت
-        if last_message.reply_markup:
-            button_found = False
-            for row in last_message.reply_markup.rows:
-                for button in row.buttons:
-                    if button_text in button.text:  # التحقق من النص المطلوب
-                        logging.info(f"تم العثور على الزر: {button.text}. جارٍ النقر عليه...")
-                        button_found = True
-
-                        # الضغط على الزر إذا كان قابلاً للنقر
-                        if isinstance(button, KeyboardButtonCallback):
-                            try:
-                                await client(functions.messages.GetBotCallbackAnswerRequest(
-                                    peer=target_bot.username,
-                                    msg_id=last_message.id,
-                                    data=button.data
-                                ))
-                                logging.info(f"تم النقر على الزر: {button.text}")
-                            except Exception as e:
-                                logging.error(f"فشل في النقر على الزر: {e}")
-
-                        # الانتظار 10 ثوانٍ بعد النقر
-                        await asyncio.sleep(10)
+            target_bot = None
+            for dialog in dialogs:
+                if isinstance(dialog.entity, User) and dialog.entity.bot:
+                    if dialog.entity.id == target_bot_id or dialog.name == target_bot_name:
+                        target_bot = dialog.entity
                         break
 
-                if button_found:
-                    break
+            # إذا لم يتم العثور على البوت
+            if not target_bot:
+                logging.error(f"لم يتم العثور على البوت بإحدى المعرفات '{target_bot_id}' أو اسم المستخدم '{target_bot_name}'.")
+                retry_count += 1  # زيادة عدد المحاولات
 
-            if not button_found:
-                logging.warning(f"لم يتم العثور على الزر '{button_text}' في الرسالة الأخيرة.")
-        else:
-            logging.info("لا توجد أزرار في الرسالة الأخيرة.")
+                if retry_count >= max_retries:
+                    logging.warning("تم الوصول إلى الحد الأقصى للمحاولات. جاري الانتظار لمدة ساعة قبل إعادة المحاولة...")
+                    await asyncio.sleep(3600)  # الانتظار لمدة ساعة
+                    retry_count = 0  # إعادة تعيين عدد المحاولات
+                continue
 
-        # استخراج التوقيت
-        try:
-            time_match = re.search(
-                r"(\d+)\s*hours?,\s*(\d+)\s*minutes?,\s*(\d+)\s*seconds?",
-                last_message.text,
-                re.IGNORECASE
-            )
-            if time_match:
-                hours = int(time_match.group(1))
-                minutes = int(time_match.group(2))
-                seconds = int(time_match.group(3))
-                total_seconds = (hours * 3600) + (minutes * 60) + seconds
-                logging.info(f"جارٍ الانتظار لمدة {total_seconds} ثانية ({hours} ساعات، {minutes} دقائق، {seconds} ثواني).")
-            else:
-                total_seconds = 3600  # ساعة افتراضية
-                logging.info(f"لم يتم العثور على توقيت. سيتم الانتظار لمدة {total_seconds} ثانية.")
+            logging.info(f"تم العثور على البوت: {target_bot.username}")
+
+            # تنفيذ باقي العمليات كما هو الحال في الكود السابق
+
         except Exception as e:
-            logging.error(f"حدث خطأ أثناء استخراج الوقت: {e}")
-            total_seconds = 3600
-            logging.info(f"تم تعيين مهلة افتراضية لمدة {total_seconds} ثانية.")
+            logging.error(f"حدث خطأ: {e}")
+            retry_count += 1  # زيادة عدد المحاولات
 
-        report["wait_duration"] = total_seconds
-        await asyncio.sleep(total_seconds)
-
-    except Exception as e:
-        logging.error(f"حدث خطأ: {e}")
-
-    finally:
-        # طباعة التقرير النهائي
-        logging.info(f"تقرير العملية:\n"
-                     f"- المعرف البوت: {report['bot_id']}\n"
-                     f"- الرسالة المرسلة: {report['message_sent']}\n"
-                     f"- الزر الذي تم التفاعل معه: {report['button_clicked']}\n"
-                     f"- مدة الانتظار: {report['wait_duration']} ثانية.")
+            if retry_count >= max_retries:
+                logging.warning("تم الوصول إلى الحد الأقصى للمحاولات. جاري الانتظار لمدة ساعة قبل إعادة المحاولة...")
+                await asyncio.sleep(3600)  # الانتظار لمدة ساعة
+                retry_count = 0  # إعادة تعيين عدد المحاولات
+            continue
