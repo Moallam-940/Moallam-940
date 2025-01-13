@@ -8,13 +8,13 @@ from telegram_client import client
 # تهيئة السجل (Logging)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-async def handle_bot(target_bot_username, message, button_text):
+async def handle_bot(target_bot_id, message, button_text):
     """
-    دالة غير تزامنية للتعامل مع البوت.
+    دالة غير تزامنية للتعامل مع البوت باستخدام المعرف (ID).
     """
-    logging.info(f"جارٍ بدء التعامل مع البوت '{target_bot_username}'...")
+    logging.info(f"جارٍ بدء التعامل مع البوت بالمعرف '{target_bot_id}'...")
     report = {
-        "bot_username": target_bot_username,
+        "bot_id": target_bot_id,
         "message_sent": message,
         "button_clicked": button_text if button_text != "0" else "No button interaction",
         "wait_duration": 0  # سيتم تحديثها لاحقًا
@@ -32,18 +32,18 @@ async def handle_bot(target_bot_username, message, button_text):
             await asyncio.sleep(3600)  # الانتظار لمدة ساعة
             return
 
-        # البحث عن البوت
+        # البحث عن البوت باستخدام المعرف (ID)
         dialogs = await client.get_dialogs()
         logging.info(f"تم العثور على {len(dialogs)} دردشة.")
 
         target_bot = None
         for dialog in dialogs:
-            if isinstance(dialog.entity, User) and dialog.entity.bot and dialog.entity.username == target_bot_username:
+            if isinstance(dialog.entity, User) and dialog.entity.bot and dialog.entity.id == target_bot_id:
                 target_bot = dialog.entity
                 break
 
         if not target_bot:
-            logging.error(f"لم يتم العثور على البوت باسم المستخدم '{target_bot_username}'.")
+            logging.error(f"لم يتم العثور على البوت بالمعرف '{target_bot_id}'.")
             return
 
         logging.info(f"تم العثور على البوت: {target_bot.username}")
@@ -134,7 +134,7 @@ async def handle_bot(target_bot_username, message, button_text):
     finally:
         # طباعة التقرير النهائي
         logging.info(f"تقرير العملية:\n"
-                     f"- اسم البوت: {report['bot_username']}\n"
+                     f"- المعرف البوت: {report['bot_id']}\n"
                      f"- الرسالة المرسلة: {report['message_sent']}\n"
                      f"- الزر الذي تم التفاعل معه: {report['button_clicked']}\n"
                      f"- مدة الانتظار: {report['wait_duration']} ثانية.")
