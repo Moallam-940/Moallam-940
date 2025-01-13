@@ -2,6 +2,7 @@ import logging
 import asyncio
 import re
 from telethon import functions
+from telethon.tl import types
 from telegram_client import client
 
 # تهيئة السجل (Logging)
@@ -12,7 +13,7 @@ async def handle_bot(target_bot_name, message, button_text, default_wait_duratio
     دالة غير تزامنية (async) للتعامل مع البوت.
     """
     logging.info(f"جارٍ بدء التعامل مع البوت '{target_bot_name}'...")
-    
+
     try:
         # التحقق من أن العميل متصل
         if not client.is_connected():
@@ -50,7 +51,20 @@ async def handle_bot(target_bot_name, message, button_text, default_wait_duratio
         last_message = messages[0]
         logging.info(f"آخر رسالة من البوت: {last_message.text}")
 
-        # تجاهل عمليات البحث عن الزر أو النقر عليه في حالة وجوده أو عدمه
+        # التحقق من وجود الأزرار في الرسالة
+        if last_message.buttons:
+            for row in last_message.buttons:
+                for button in row:
+                    if button.text == button_text:
+                        # النقر على الزر الذي يحتوي على النص المحدد
+                        logging.info(f"تم العثور على الزر '{button_text}'. جاري النقر عليه...")
+                        await client.send_click(target_bot, button)
+                        await asyncio.sleep(10)  # الانتظار بعد النقر
+                        break
+            else:
+                logging.info("لم يتم العثور على الزر المطلوب.")
+        else:
+            logging.info("لا تحتوي الرسالة على أزرار.")
 
         # محاولة استخراج الوقت من الرسالة
         try:
@@ -80,6 +94,7 @@ async def handle_bot(target_bot_name, message, button_text, default_wait_duratio
             "wait_duration": default_wait_duration
         }
 
+        # التأكد من طباعة التقرير بشكل صحيح
         logging.info(f"تقرير العملية:\n"
                      f"- اسم البوت: {report['bot_username']}\n"
                      f"- مدة الانتظار: {report['wait_duration']} ثانية.")

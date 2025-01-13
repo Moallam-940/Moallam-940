@@ -30,8 +30,8 @@ async def main():
         ("@FreeRipplexrpvipBot", "💸 FREE XRP 💸", "0", 86400),
         ("@FreeTetherV3Bot", "🎁 FREE USDT 🎁", "0", 86400),
         ("@SolanaInviteBot", "🔥 FREE BONUS", "0", 86400),
-        ("@TronMinerHubProbot", "⇢ Claim Bonus", "0", 86400),
-        ("@SOLMinedProbot", "❇️ Hourly Bonus", "0", 86400),
+        ("@TronMinerHubProbot", "⇢ Claim Bonus", "0", 3600),
+        ("@SOLMinedProbot", "❇️ Hourly Bonus", "0", 3600),
     ]
 
     # تشغيل كل بوت في مهمة منفصلة
