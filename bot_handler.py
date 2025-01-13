@@ -37,7 +37,7 @@ async def handle_bot(bot_url, message, button_text, default_wait):
                                 ))
                                 logging.info(f"تم النقر على الزر '{button.text}' في البوت {bot_url}.")
                             except Exception as e:
-                                logging.warning(f"فشل في النقر على الزر: {e}. سيتم تجاهل الخطأ والمتابعة.")
+                                #logging.warning(f"فشل في النقر على الزر: {e}. سيتم تجاهل الخطأ والمتابعة.")
                                 pass
                         button_clicked = True
                         break
@@ -55,16 +55,18 @@ async def handle_bot(bot_url, message, button_text, default_wait):
 
         last_message = messages[0]
 
-        # استخراج وقت الانتظار من الرسالة
-        wait_time = None
-        if last_message.text:
-            # تعديل التعبير العادي ليشمل الساعات، الدقائق، والثواني مع المسافات والفواصل
-            match = re.search(r"(?:(\d+)\s*(?:hour|hours?)\s*,?\s*)?(\d+)\s*(?:minute|minutes?)\s*,?\s*(\d+)\s*(?:second|seconds?)", last_message.text, re.IGNORECASE)
-            if match:
-                hours = int(match.group(1) or 0)  # تعيين الساعات إلى صفر إذا لم توجد
-                minutes = int(match.group(2) or 0)  # تعيين الدقائق إلى صفر إذا لم توجد
-                seconds = int(match.group(3) or 0)  # تعيين الثواني إلى صفر إذا لم توجد
-                wait_time = hours * 3600 + minutes * 60 + seconds
+# استخراج وقت الانتظار من الرسالة
+wait_time = None
+last_message_text = "🕐 You can claim your bonus again in 16 hours, 29 minutes, and 26 seconds."
+
+if last_message_text:
+    # تعديل التعبير العادي ليشمل الساعات، الدقائق، والثواني مع المسافات والفواصل
+    match = re.search(r"(?:(\d+)\s*(?:hour|hours?)\s*,?\s*)?(?:(\d+)\s*(?:minute|minutes?)\s*,?\s*)?(\d+)\s*(?:second|seconds?)", last_message_text, re.IGNORECASE)
+    if match:
+        hours = int(match.group(1) or 0)  # تعيين الساعات إلى صفر إذا لم توجد
+        minutes = int(match.group(2) or 0)  # تعيين الدقائق إلى صفر إذا لم توجد
+        seconds = int(match.group(3) or 0)  # تعيين الثواني إلى صفر إذا لم توجد
+        wait_time = hours * 3600 + minutes * 60 + seconds
 
         # تعيين المهلة الافتراضية إذا لم يتم العثور على وقت
         if wait_time is None:
