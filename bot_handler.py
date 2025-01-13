@@ -21,6 +21,8 @@ async def extract_wait_time(message_text, default_wait):
 
     match = pattern.search(message_text)
     if match:
+        print("التطابق:", match.groups())  # لفحص الأرقام المستخرجة
+
         # استخراج الأرقام من التطابق
         hours = int(match.group(1) or 0) if match.group(1) else 0
         minutes = int(match.group(2) or 0) if match.group(2) else 0
