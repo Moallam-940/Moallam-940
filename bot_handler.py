@@ -55,17 +55,22 @@ async def handle_bot(bot_url, message, button_text, default_wait):
 
         last_message = messages[0]
 
-# استخراج وقت الانتظار من الرسالة
-wait_time = None
+        # استخراج وقت الانتظار من الرسالة
+        wait_time = None
 
-if last_message.text:
-    # تعديل التعبير العادي ليشمل الساعات، الدقائق، والثواني مع المسافات والفواصل
-    match = re.search(r"(?:(\d+)\s*(?:hour|hours?)\s*,?\s*)?(?:(\d+)\s*(?:minute|minutes?)\s*,?\s*)?(\d+)\s*(?:second|seconds?)", last_message_text, re.IGNORECASE)
-    if match:
-        hours = int(match.group(1) or 0)  # تعيين الساعات إلى صفر إذا لم توجد
-        minutes = int(match.group(2) or 0)  # تعيين الدقائق إلى صفر إذا لم توجد
-        seconds = int(match.group(3) or 0)  # تعيين الثواني إلى صفر إذا لم توجد
-        wait_time = hours * 3600 + minutes * 60 + seconds
+        if last_message.text:
+            try:
+                # تعديل التعبير العادي ليشمل الساعات، الدقائق، والثواني مع المسافات والفواصل
+                match = re.search(r"(?:(\d+)\s*(?:hour|hours?)\s*,?\s*)?(?:(\d+)\s*(?:minute|minutes?)\s*,?\s*)?(\d+)\s*(?:second|seconds?)", last_message.text, re.IGNORECASE)
+                if match:
+                    hours = int(match.group(1) or 0)  # تعيين الساعات إلى صفر إذا لم توجد
+                    minutes = int(match.group(2) or 0)  # تعيين الدقائق إلى صفر إذا لم توجد
+                    seconds = int(match.group(3) or 0)  # تعيين الثواني إلى صفر إذا لم توجد
+                    wait_time = hours * 3600 + minutes * 60 + seconds
+
+            except Exception as e:
+                # هنا يمكن إلغاء تسجيل الأخطاء
+                pass  # ببساطة لا نفعل شيئاً إذا حدث خطأ
 
         # تعيين المهلة الافتراضية إذا لم يتم العثور على وقت
         if wait_time is None:
@@ -76,5 +81,4 @@ if last_message.text:
         await asyncio.sleep(wait_time)
 
     except Exception as e:
-        # هنا يمكن إلغاء تسجيل الأخطاء
-        pass  # ببساطة لا نفعل شيئاً إذا حدث خطأ
+        logging.error(f"حدث خطأ في التعامل مع البوت {bot_url}: {e}")
