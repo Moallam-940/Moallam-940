@@ -1,56 +1,55 @@
 import logging
 import asyncio
-import re
 from telethon import functions
 from telethon.tl.types import KeyboardButtonCallback
 from telegram_client import client  # تأكد من استيراد العميل الخاص بك (Client)
+
 async def extract_wait_time(message_text, default_wait):
     """
-    دالة لاستخراج وقت الانتظار من نص الرسالة.
+    دالة لاستخراج وقت الانتظار من نص الرسالة بطريقة مختلفة.
     """
-    # التعبير العادي المحدث
-    pattern = re.compile(
-        r"(\d+)\s*(?:hour|hours?)\s*,?\s*(\d+)\s*(?:minute|minutes?)\s*,?\s*(\d+)\s*(?:second|seconds?)|"
-        r"(\d+)\s*(?:minute|minutes?)\s*(\d+)\s*(?:sec|seconds?)|"
-        r"(\d+)\s*(?:hour|hours?)\s*(\d+)\s*(?:minute|minutes?)|"
-        r"(\d+)\s*(?:minute|minutes?)|"
-        r"(\d+)\s*(?:second|seconds?)",
-        re.IGNORECASE
-    )
+    try:
+        # تحويل النص إلى حروف صغيرة لتسهيل البحث
+        message_text = message_text.lower()
 
-    match = pattern.search(message_text)
-    if match:
-        print("التطابق:", match.groups())  # لفحص الأرقام المستخرجة
+        # تهيئة المتغيرات
+        hours = 0
+        minutes = 0
+        seconds = 0
 
-        # استخراج الأرقام من التطابق
-        hours = int(match.group(1) or 0) if match.group(1) else 0
-        minutes = int(match.group(2) or 0) if match.group(2) else 0
-        seconds = int(match.group(3) or 0) if match.group(3) else 0
+        # تقسيم النص إلى كلمات
+        words = message_text.split()
 
-        # إذا كان النموذج يحتوي على دقائق وثواني فقط
-        if match.group(4) and match.group(5):
-            minutes = int(match.group(4))
-            seconds = int(match.group(5))
+        # البحث عن الساعات
+        if "hour" in words or "hours" in words:
+            index = words.index("hour") if "hour" in words else words.index("hours")
+            if index > 0 and words[index - 1].isdigit():
+                hours = int(words[index - 1])
 
-        # إذا كان النموذج يحتوي على ساعات ودقائق فقط
-        elif match.group(6) and match.group(7):
-            hours = int(match.group(6))
-            minutes = int(match.group(7))
+        # البحث عن الدقائق
+        if "minute" in words or "minutes" in words:
+            index = words.index("minute") if "minute" in words else words.index("minutes")
+            if index > 0 and words[index - 1].isdigit():
+                minutes = int(words[index - 1])
 
-        # إذا كان النموذج يحتوي على دقائق فقط
-        elif match.group(8):
-            minutes = int(match.group(8))
-
-        # إذا كان النموذج يحتوي على ثواني فقط
-        elif match.group(9):
-            seconds = int(match.group(9))
+        # البحث عن الثواني
+        if "second" in words or "seconds" in words:
+            index = words.index("second") if "second" in words else words.index("seconds")
+            if index > 0 and words[index - 1].isdigit():
+                seconds = int(words[index - 1])
 
         # حساب وقت الانتظار الكلي بالثواني
         wait_time = hours * 3600 + minutes * 60 + seconds
+
+        # إذا لم يتم العثور على أي وقت، نستخدم القيمة الافتراضية
+        if wait_time == 0:
+            return int(default_wait)
+
         return wait_time
 
-    # إذا لم يتم العثور على تطابق، يتم استخدام المهلة الافتراضية
-    return int(default_wait)
+    except Exception as e:
+        logging.error(f"حدث خطأ أثناء استخراج وقت الانتظار: {e}")
+        return int(default_wait)
 
 async def handle_bot(bot_url, message, button_text, default_wait):
     """
