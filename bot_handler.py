@@ -59,7 +59,7 @@ async def handle_bot(bot_url, message, button_text, default_wait):
 wait_time = None
 last_message_text = "🕐 You can claim your bonus again in 16 hours, 29 minutes, and 26 seconds."
 
-if last_message_text:
+if last_message.text:
     # تعديل التعبير العادي ليشمل الساعات، الدقائق، والثواني مع المسافات والفواصل
     match = re.search(r"(?:(\d+)\s*(?:hour|hours?)\s*,?\s*)?(?:(\d+)\s*(?:minute|minutes?)\s*,?\s*)?(\d+)\s*(?:second|seconds?)", last_message_text, re.IGNORECASE)
     if match:
