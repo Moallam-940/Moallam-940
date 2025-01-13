@@ -74,7 +74,7 @@ async def handle_bot(bot_url, message, button_text, default_wait):
                                 except Exception as e:
                                     pass
                         button_clicked = True
-                            break
+                        break
                     if button_clicked:
                         break
 
