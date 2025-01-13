@@ -18,15 +18,6 @@ async def ensure_client_connection():
         return False
     return True
 
-async def run_bot(bot_url, message, button_text, default_wait):
-    """
-    دالة لتشغيل البوت في حلقة مستقلة.
-    """
-    try:
-        await handle_bot(bot_url, message, button_text, default_wait)
-    except Exception as e:
-        logging.error(f"حدث خطأ مع البوت {bot_url}: {e}")
-
 async def main():
     logging.info("جارٍ بدء خدمة البوت...")
 
@@ -46,11 +37,12 @@ async def main():
         ("https://t.me/SolanaInviteBot", "🔥 FREE BONUS", "0", "86400"),
         ("https://t.me/TronMinerHubProbot", "⇢ Claim Bonus", "0", "3600"),
         ("https://t.me/SOLMinedProbot", "❇️ Hourly Bonus", "0", "3600"),
+("https://t.me/BNBMiningMaestrov2bot", "🎁 HORLY BONUS", "0", "3600"),
     ]
 
     # تشغيل كل بوت في مهمة منفصلة
     for bot in bots:
-        asyncio.create_task(run_bot(*bot))
+        asyncio.create_task(handle_bot(*bot))
 
     # تشغيل تطبيق Quart
     await run_app()
