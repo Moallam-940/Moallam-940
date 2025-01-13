@@ -61,12 +61,14 @@ async def handle_bot(bot_url, message, button_text, default_wait):
         if last_message.text:
             try:
                 # تعديل التعبير العادي ليشمل الساعات، الدقائق، والثواني مع المسافات والفواصل
-                match = re.search(r"(?:(\d+)\s*(?:hour|hours?)\s*,?\s*)?(?:(\d+)\s*(?:minute|minutes?)\s*,?\s*)?(\d+)\s*(?:second|seconds?)", last_message.text, re.IGNORECASE)
+                match = re.search(r"(?:(\d+)\s*(?:hour|hours?)\s*,?\s*)?(?:(\d+)\s*(?:minute|minutes?)\s*,?\s*)?(\d+)\s*(?:second|seconds?)\s*(?:and)?\s*(\d+)?\s*(?:minute|minutes?)?", last_message.text, re.IGNORECASE)
                 if match:
                     hours = int(match.group(1) or 0)  # تعيين الساعات إلى صفر إذا لم توجد
                     minutes = int(match.group(2) or 0)  # تعيين الدقائق إلى صفر إذا لم توجد
                     seconds = int(match.group(3) or 0)  # تعيين الثواني إلى صفر إذا لم توجد
                     wait_time = hours * 3600 + minutes * 60 + seconds
+                    if match.group(4):  # في حال وجود دقائق إضافية بعد "and"
+                        wait_time += int(match.group(4)) * 60
 
             except Exception as e:
                 # هنا يمكن إلغاء تسجيل الأخطاء
