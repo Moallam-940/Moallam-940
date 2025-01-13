@@ -38,7 +38,7 @@ async def handle_bot(bot_url, message, button_text, default_wait):
                                 logging.info(f"تم النقر على الزر '{button.text}' في البوت {bot_url}.")
                             except Exception as e:
                                 logging.warning(f"فشل في النقر على الزر: {e}. سيتم تجاهل الخطأ والمتابعة.")
-        pass
+                                pass
                         button_clicked = True
                         break
                 if button_clicked:
