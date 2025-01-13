@@ -29,11 +29,15 @@ async def handle_bot(bot_url, message, button_text, default_wait):
                 for button in row.buttons:
                     if button_text in button.text:
                         if isinstance(button, KeyboardButtonCallback):
-                            await client(functions.messages.GetBotCallbackAnswerRequest(
-                                peer=bot_username,
-                                msg_id=last_message.id,
-                                data=button.data
-                            ))
+                            try:
+                                await client(functions.messages.GetBotCallbackAnswerRequest(
+                                    peer=bot_username,
+                                    msg_id=last_message.id,
+                                    data=button.data
+                                ))
+                                logging.info(f"تم النقر على الزر '{button.text}' في البوت {bot_url}.")
+                            except Exception as e:
+                                logging.warning(f"فشل في النقر على الزر: {e}. سيتم تجاهل الخطأ والمتابعة.")
                         button_clicked = True
                         break
                 if button_clicked:
