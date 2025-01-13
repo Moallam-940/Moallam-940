@@ -35,11 +35,11 @@ async def extract_wait_time(message_text, default_wait):
                         seconds = int(part)
 
         # حساب وقت الانتظار الكلي بالثواني
-        wait_time = hours * 3600 + minutes * 60 + seconds
+        wait_time = hours * 3600 + minutes * 60 + seconds + 60
 
         # إذا لم يتم العثور على أي وقت، نستخدم القيمة الافتراضية
         if wait_time == 0:
-            return int(default_wait)
+            return int(default_wait + 60)
 
         return wait_time
 
