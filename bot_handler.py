@@ -37,7 +37,7 @@ async def handle_bot(bot_url, message, button_text, default_wait):
                                 ))
                                 logging.info(f"تم النقر على الزر '{button.text}' في البوت {bot_url}.")
                             except Exception as e:
-                               # logging.warning(f"فشل في النقر على الزر: {e}. سيتم تجاهل الخطأ والمتابعة.")
+                                logging.warning(f"فشل في النقر على الزر: {e}. سيتم تجاهل الخطأ والمتابعة.")
         pass
                         button_clicked = True
                         break
@@ -49,12 +49,6 @@ async def handle_bot(bot_url, message, button_text, default_wait):
             await asyncio.sleep(10)
 
         # الحصول على آخر رسالة مرة أخرى بعد 10 ثوانٍ
-        messages = await client.get_messages(bot_username, limit=1)
-        if not messages:
-            raise Exception(f"لم يتم العثور على رسائل في البوت {bot_username} بعد الانتظار.")
-
-        last_message = messages[0]
-
         messages = await client.get_messages(bot_username, limit=1)
         if not messages:
             raise Exception(f"لم يتم العثور على رسائل في البوت {bot_username} بعد الانتظار.")
@@ -82,5 +76,4 @@ async def handle_bot(bot_url, message, button_text, default_wait):
 
     except Exception as e:
         # هنا يمكن إلغاء تسجيل الأخطاء
-        # logging.error(f"حدث خطأ أثناء التعامل مع البوت {bot_url}: {e}")
         pass  # ببساطة لا نفعل شيئاً إذا حدث خطأ
