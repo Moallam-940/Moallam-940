@@ -37,7 +37,8 @@ async def handle_bot(bot_url, message, button_text, default_wait):
                                 ))
                                 logging.info(f"تم النقر على الزر '{button.text}' في البوت {bot_url}.")
                             except Exception as e:
-                                logging.warning(f"فشل في النقر على الزر: {e}. سيتم تجاهل الخطأ والمتابعة.")
+                               # logging.warning(f"فشل في النقر على الزر: {e}. سيتم تجاهل الخطأ والمتابعة.")
+        pass
                         button_clicked = True
                         break
                 if button_clicked:
@@ -54,10 +55,16 @@ async def handle_bot(bot_url, message, button_text, default_wait):
 
         last_message = messages[0]
 
+        messages = await client.get_messages(bot_username, limit=1)
+        if not messages:
+            raise Exception(f"لم يتم العثور على رسائل في البوت {bot_username} بعد الانتظار.")
+
+        last_message = messages[0]
+
         # استخراج وقت الانتظار من الرسالة
         wait_time = None
         if last_message.text:
-            # تعديل التعبير العادي ليشمل الساعات، الدقائق، والثواني
+            # تعديل التعبير العادي ليشمل الساعات، الدقائق، والثواني مع المسافات والفواصل
             match = re.search(r"(?:(\d+)\s*(?:hour|hours?)\s*,?\s*)?(\d+)\s*(?:minute|minutes?)\s*,?\s*(\d+)\s*(?:second|seconds?)", last_message.text, re.IGNORECASE)
             if match:
                 hours = int(match.group(1) or 0)  # تعيين الساعات إلى صفر إذا لم توجد
