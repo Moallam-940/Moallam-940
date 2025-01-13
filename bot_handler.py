@@ -9,46 +9,51 @@ async def handle_bot(bot_url, message, button_text, default_wait):
     """
     دالة غير تزامنية للتعامل مع البوت عبر الرابط.
     """
+    bot_username = bot_url.split("/")[-1]  # استخراج اسم البوت من الرابط
     try:
-        bot_username = bot_url.split("/")[-1]  # استخراج اسم البوت
+        # إرسال الرسالة
         await client.send_message(bot_username, message)
-        await asyncio.sleep(10)
+        await asyncio.sleep(10)  # الانتظار 10 ثوانٍ
 
+        # الحصول على آخر رسالة
         messages = await client.get_messages(bot_username, limit=1)
-        last_message = messages[0] if messages else None
+        if not messages:
+            raise Exception(f"لم يتم العثور على رسائل في البوت {bot_username}.")
 
-        wait_duration = default_wait  # القيمة الافتراضية للمهلة
-        if last_message:
-            # البحث عن الزر في الرسالة الأخيرة
-            if button_text != "0" and last_message.reply_markup:
-                for row in last_message.reply_markup.rows:
-                    for button in row.buttons:
-                        if button_text in button.text:
-                            if isinstance(button, KeyboardButtonCallback):
-                                await client(functions.messages.GetBotCallbackAnswerRequest(
-                                    peer=bot_username,
-                                    msg_id=last_message.id,
-                                    data=button.data
-                                ))
-                            break
+        last_message = messages[0]
 
-            # محاولة استخراج الوقت من الرسالة
-            time_match = re.search(r"(\d+)\s*hours?,\s*(\d+)\s*minutes?,\s*(\d+)\s*seconds?", last_message.text, re.IGNORECASE)
-            if time_match:
-                hours = int(time_match.group(1))
-                minutes = int(time_match.group(2))
-                seconds = int(time_match.group(3))
-                wait_duration = (hours * 3600) + (minutes * 60) + seconds
+        # البحث عن الزر
+        button_clicked = False
+        if button_text != "0" and last_message.reply_markup:
+            for row in last_message.reply_markup.rows:
+                for button in row.buttons:
+                    if button_text in button.text:
+                        if isinstance(button, KeyboardButtonCallback):
+                            await client(functions.messages.GetBotCallbackAnswerRequest(
+                                peer=bot_username,
+                                msg_id=last_message.id,
+                                data=button.data
+                            ))
+                        button_clicked = True
+                        break
+                if button_clicked:
+                    break
 
-        # العودة بتقرير البوت
-        return {
-            "bot_url": bot_url,
-            "wait_duration": wait_duration,
-        }
+        # استخراج وقت الانتظار من الرسالة
+        wait_time = None
+        if last_message.text:
+            match = re.search(r"(\d+)\s*hours?,\s*(\d+)\s*minutes?,\s*(\d+)\s*seconds?", last_message.text, re.IGNORECASE)
+            if match:
+                hours, minutes, seconds = map(int, match.groups())
+                wait_time = hours * 3600 + minutes * 60 + seconds
+
+        # تعيين المهلة الافتراضية إذا لم يتم العثور على وقت
+        if wait_time is None:
+            wait_time = int(default_wait)
+
+        # سجل العملية
+        logging.info(f"تقرير البوت {bot_url}: المهلة المعينة = {wait_time} ثانية.")
+        await asyncio.sleep(wait_time)
 
     except Exception as e:
-        logging.error(f"حدث خطأ مع البوت {bot_url}: {e}")
-        return {
-            "bot_url": bot_url,
-            "wait_duration": default_wait,  # إذا حدث خطأ نعود بالقيمة الافتراضية
-        }
+        logging.error(f"حدث خطأ أثناء التعامل مع البوت {bot_url}: {e}")
