@@ -39,6 +39,10 @@ async def handle_bot(bot_url, message, button_text, default_wait):
                 if button_clicked:
                     break
 
+        # انتظار 10 ثوانٍ بعد النقر على الزر
+        if button_clicked:
+            await asyncio.sleep(10)
+
         # استخراج وقت الانتظار من الرسالة
         wait_time = None
         if last_message.text:
