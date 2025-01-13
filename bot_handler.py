@@ -47,6 +47,13 @@ async def handle_bot(bot_url, message, button_text, default_wait):
         if button_clicked:
             await asyncio.sleep(10)
 
+        # الحصول على آخر رسالة مرة أخرى بعد 10 ثوانٍ
+        messages = await client.get_messages(bot_username, limit=1)
+        if not messages:
+            raise Exception(f"لم يتم العثور على رسائل في البوت {bot_username} بعد الانتظار.")
+
+        last_message = messages[0]
+
         # استخراج وقت الانتظار من الرسالة
         wait_time = None
         if last_message.text:
