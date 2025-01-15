@@ -39,6 +39,7 @@ async def main():
         ("https://t.me/SOLMinedProbot", "❇️ Hourly Bonus", "0", "3600"),
 ("https://t.me/BNBMiningMaestrov2bot", "🎁 HORLY BONUS", "0", "3600"),
 ("https://t.me/USDTMintMasterProBot", "⥴ Extra Bonus", "0", "3600"),
+("https://t.me/TetherTreasureMinerBot", "⇢ Bonus Rewards", "0", "3600"),
     ]
 
     # تشغيل كل بوت في مهمة منفصلة
