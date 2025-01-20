@@ -41,7 +41,8 @@ async def main():
 ("https://t.me/USDTMintMasterProBot", "⥴ Extra Bonus", "0", "3600"),
 ("https://t.me/TetherTreasureMinerBot", "⇢ Bonus Rewards", "0", "3600"),
 ("https://t.me/TrxPayProv2bot", "🔺🔻 FREE TRX 🔺🔻", "0", "3600"),
-    ]
+("https://t.me/get_free_bitcoin_now_bot", "🎁 Bonus", "Receive", "28800"),
+]
 
     # تشغيل كل بوت في مهمة منفصلة
     for bot in bots:
