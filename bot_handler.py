@@ -7,50 +7,30 @@ from telegram_client import client  # تأكد من استيراد العميل 
 
 async def extract_wait_time(message_text, default_wait):
     """
-    دالة لاستخراج وقت الانتظار من نص الرسالة.
+    دالة لاستخراج وقت الانتظار من نص الرسالة بطريقة جديدة.
     """
     try:
-        # تحويل النص إلى حروف صغيرة وتصحيح الأخطاء الإملائية
-        message_text = message_text.lower().replace("munite", "minute").replace("sec", "second")
+        # تحويل النص إلى حروف صغيرة لتسهيل البحث
+        message_text = message_text.lower()
 
-        # تعبيرات عادية لالتقاط جميع الصيغ
-        patterns = [
-            r"your next available bonus is after (\d+)\s*(minute|minutes|second|seconds)\s*(\d+)\s*(second|seconds)?",  # الصيغة 1
-            r"wait:\s*(\d+)\s*(hour|hours|minute|minutes|second|seconds)\s*(\d+)\s*(minute|minutes|second|seconds)?\s*(\d+)\s*(second|seconds)?",  # الصيغة 2
-            r"please wait (\d+)\s*(minute|minutes|second|seconds)",  # الصيغة 3
-            r"you can claim your bonus again in (\d+)\s*(hour|hours|minute|minutes|second|seconds)[,\s]*(\d+)\s*(minute|minutes|second|seconds)?[,\s]*and\s*(\d+)\s*(second|seconds)?",  # الصيغة 4
-        ]
+        # البحث عن الأرقام المرتبطة بالكلمات الرئيسية
+        hours_match = re.search(r"(\d+)\s*(hour|hours)", message_text)
+        minutes_match = re.search(r"(\d+)\s*(minute|minutes)", message_text)
+        seconds_match = re.search(r"(\d+)\s*(second|seconds)", message_text)
 
-        # البحث عن التطابق الأول
-        wait_match = None
-        for pattern in patterns:
-            wait_match = re.search(pattern, message_text)
-            if wait_match:
-                break
-
-        if not wait_match:
-            logging.warning("لم يتم العثور على وقت انتظار محدد في الرسالة. استخدام القيمة الافتراضية.")
-            return int(default_wait)
-
-        # استخراج الأرقام والوحدات
-        if wait_match.lastindex >= 5:  # الصيغة 2 أو 4
-            hours = int(wait_match.group(1)) if "hour" in wait_match.group(2) else 0
-            minutes = int(wait_match.group(3)) if wait_match.group(4) and "minute" in wait_match.group(4) else 0
-            seconds = int(wait_match.group(5)) if wait_match.group(6) and "second" in wait_match.group(6) else 0
-        elif wait_match.lastindex >= 3:  # الصيغة 1
-            minutes = int(wait_match.group(1)) if "minute" in wait_match.group(2) else 0
-            seconds = int(wait_match.group(3)) if wait_match.group(4) and "second" in wait_match.group(4) else 0
-            hours = 0
-        else:  # الصيغة 3
-            minutes = int(wait_match.group(1)) if "minute" in wait_match.group(2) else 0
-            seconds = int(wait_match.group(1)) if "second" in wait_match.group(2) else 0
-            hours = 0
+        # استخراج الأرقام
+        hours = int(hours_match.group(1)) if hours_match else 0
+        minutes = int(minutes_match.group(1)) if minutes_match else 0
+        seconds = int(seconds_match.group(1)) if seconds_match else 0
 
         # حساب وقت الانتظار الكلي بالثواني
-        wait_time = hours * 3600 + minutes * 60 + seconds
+        wait_time = hours * 3600 + minutes * 60 + seconds + 60
 
-        # إضافة 60 ثانية كهامش أمان
-        return wait_time + 60
+        # إذا لم يتم العثور على أي وقت، نستخدم القيمة الافتراضية
+        if wait_time == 0:
+            return int(default_wait + 60)
+
+        return wait_time
 
     except Exception as e:
         logging.error(f"حدث خطأ أثناء استخراج وقت الانتظار: {e}")
@@ -62,7 +42,7 @@ async def handle_bot(bot_url, message, button_text, default_wait):
     """
     bot_username = bot_url.split("/")[-1]  # استخراج اسم البوت من الرابط
     
-    while True:  # حلقة لتكرار العملية
+    while True:  # إضافة حلقة لتكرار العملية
         try:
             # إرسال الرسالة
             await client.send_message(bot_username, message)
@@ -92,9 +72,9 @@ async def handle_bot(bot_url, message, button_text, default_wait):
                                     ))
                                     logging.info(f"تم النقر على الزر '{button.text}' في البوت {bot_url}.")
                                 except Exception as e:
-                                    logging.error(f"فشل في النقر على الزر: {e}")
-                            button_clicked = True
-                            break
+                                    pass
+                        button_clicked = True
+                        break
                     if button_clicked:
                         break
 
