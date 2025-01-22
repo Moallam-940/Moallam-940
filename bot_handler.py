@@ -11,25 +11,43 @@ async def extract_wait_time(message_text, default_wait):
     """
     try:
         # تحويل النص إلى حروف صغيرة وتصحيح الأخطاء الإملائية
-        message_text = message_text.lower().replace("munite", "minute")
+        message_text = message_text.lower().replace("munite", "minute").replace("sec", "second")
 
-        # استخدام تعبير عادي أكثر مرونة
-        time_matches = re.findall(r"(\d+)\s*(hour|hours|minute|minutes|second|seconds)", message_text)
+        # تعبيرات عادية لالتقاط جميع الصيغ
+        patterns = [
+            r"your next available bonus is after (\d+)\s*(minute|minutes|second|seconds)\s*(\d+)\s*(second|seconds)?",  # الصيغة 1
+            r"wait:\s*(\d+)\s*(hour|hours|minute|minutes|second|seconds)\s*(\d+)\s*(minute|minutes|second|seconds)?\s*(\d+)\s*(second|seconds)?",  # الصيغة 2
+            r"please wait (\d+)\s*(minute|minutes|second|seconds)",  # الصيغة 3
+            r"you can claim your bonus again in (\d+)\s*(hour|hours|minute|minutes|second|seconds)[,\s]*(\d+)\s*(minute|minutes|second|seconds)?[,\s]*and\s*(\d+)\s*(second|seconds)?",  # الصيغة 4
+        ]
 
-        if not time_matches:
-            logging.warning("لم يتم العثور على وقت انتظار في الرسالة. استخدام القيمة الافتراضية.")
+        # البحث عن التطابق الأول
+        wait_match = None
+        for pattern in patterns:
+            wait_match = re.search(pattern, message_text)
+            if wait_match:
+                break
+
+        if not wait_match:
+            logging.warning("لم يتم العثور على وقت انتظار محدد في الرسالة. استخدام القيمة الافتراضية.")
             return int(default_wait)
 
+        # استخراج الأرقام والوحدات
+        if wait_match.lastindex >= 5:  # الصيغة 2 أو 4
+            hours = int(wait_match.group(1)) if "hour" in wait_match.group(2) else 0
+            minutes = int(wait_match.group(3)) if wait_match.group(4) and "minute" in wait_match.group(4) else 0
+            seconds = int(wait_match.group(5)) if wait_match.group(6) and "second" in wait_match.group(6) else 0
+        elif wait_match.lastindex >= 3:  # الصيغة 1
+            minutes = int(wait_match.group(1)) if "minute" in wait_match.group(2) else 0
+            seconds = int(wait_match.group(3)) if wait_match.group(4) and "second" in wait_match.group(4) else 0
+            hours = 0
+        else:  # الصيغة 3
+            minutes = int(wait_match.group(1)) if "minute" in wait_match.group(2) else 0
+            seconds = int(wait_match.group(1)) if "second" in wait_match.group(2) else 0
+            hours = 0
+
         # حساب وقت الانتظار الكلي بالثواني
-        wait_time = 0
-        for value, unit in time_matches:
-            value = int(value)
-            if "hour" in unit:
-                wait_time += value * 3600
-            elif "minute" in unit:
-                wait_time += value * 60
-            elif "second" in unit:
-                wait_time += value
+        wait_time = hours * 3600 + minutes * 60 + seconds
 
         # إضافة 60 ثانية كهامش أمان
         return wait_time + 60
