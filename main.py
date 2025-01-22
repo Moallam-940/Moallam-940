@@ -25,23 +25,23 @@ async def main():
     if not await ensure_client_connection():
         return
 
-    # (رابط البوت، الرسالة المطلوب ارسالها، النص المطلوب البحث عنه في الزر، المهلة الافتراضية)
+    # (رابط البوت، الرسالة المطلوب ارسالها، النص المطلوب البحث عنه في الزر، المهلة الافتراضية، النص المطلوب استخراج المهلة منه)
     bots = [
-        ("https://t.me/DailyUSDTClaimBot", "🆔 Account Balance", "🔥 Huge Extra Bonus 🔥", "3600"),
-        ("https://t.me/BitcoinBTCCloudPoolBot", "Get Coin 🎁", "🎁 Daily Bonus 🎁", "3600"),
-        ("https://t.me/DOGSMININGPROBOT", "FREE BONUS 🐶", "⌚ Hourly Bonus", "3600"),
-        ("https://t.me/USDTMintMasterProV2Bot", "⥴ Extra Bonus", "⌚ Hourly Bonus", "3600"),
-        ("https://t.me/SOLMineProbot", "❇️ Hourly Bonus", "⌚ Hourly Bonus", "3600"),
-        ("https://t.me/FreeRipplexrpvipBot", "💸 FREE XRP 💸", "0", "86400"),
-        ("https://t.me/FreeTetherV3Bot", "🎁 FREE USDT 🎁", "0", "86400"),
-        ("https://t.me/SolanaInviteBot", "🔥 FREE BONUS", "0", "86400"),
-        ("https://t.me/TronMinerHubProbot", "⇢ Claim Bonus", "0", "3600"),
-        ("https://t.me/SOLMinedProbot", "❇️ Hourly Bonus", "0", "3600"),
-("https://t.me/BNBMiningMaestrov2bot", "🎁 HORLY BONUS", "0", "3600"),
-("https://t.me/USDTMintMasterProBot", "⥴ Extra Bonus", "0", "3600"),
-("https://t.me/TetherTreasureMinerBot", "⇢ Bonus Rewards", "0", "3600"),
-("https://t.me/TrxPayProv2bot", "🔺🔻 FREE TRX 🔺🔻", "0", "3600"),
-("https://t.me/get_free_bitcoin_now_bot", "🎁 Bonus", "Receive", "28800"),
+        ("https://t.me/DailyUSDTClaimBot", "🆔 Account Balance", "🔥 Huge Extra Bonus 🔥", "3600", "Your next available bonus is after"),
+        ("https://t.me/BitcoinBTCCloudPoolBot", "Get Coin 🎁", "🎁 Daily Bonus 🎁", "3600", "Your next available bonus is after"),
+        ("https://t.me/DOGSMININGPROBOT", "FREE BONUS 🐶", "⌚ Hourly Bonus", "3600", "Your next available bonus is after"),
+        ("https://t.me/USDTMintMasterProV2Bot", "⥴ Extra Bonus", "⌚ Hourly Bonus", "3600", "Your next available bonus is after"),
+        ("https://t.me/SOLMineProbot", "❇️ Hourly Bonus", "⌚ Hourly Bonus", "3600", "Your next available bonus is after"),
+        ("https://t.me/FreeRipplexrpvipBot", "💸 FREE XRP 💸", "0", "86400", "You can claim your bonus again in"),
+        ("https://t.me/FreeTetherV3Bot", "🎁 FREE USDT 🎁", "0", "86400", "You can claim your bonus again in"),
+        ("https://t.me/SolanaInviteBot", "🔥 FREE BONUS", "0", "86400", "You can claim your bonus again in"),
+        ("https://t.me/TronMinerHubProbot", "⇢ Claim Bonus", "0", "3600", "Your next available bonus is after"),
+        ("https://t.me/SOLMinedProbot", "❇️ Hourly Bonus", "0", "3600", "Your next available bonus is after"),
+("https://t.me/BNBMiningMaestrov2bot", "🎁 HORLY BONUS", "0", "3600", "Your next available bonus is after"),
+("https://t.me/USDTMintMasterProBot", "⥴ Extra Bonus", "0", "3600", "Your next available bonus is after"),
+("https://t.me/TetherTreasureMinerBot", "⇢ Bonus Rewards", "0", "3600", "Your next available bonus is after"),
+("https://t.me/TrxPayProv2bot", "🔺🔻 FREE TRX 🔺🔻", "0", "3600", "Please wait"),
+("https://t.me/get_free_bitcoin_now_bot", "🎁 Bonus", "Receive", "28800", "Wait:"),
 ]
 
     # تشغيل كل بوت في مهمة منفصلة

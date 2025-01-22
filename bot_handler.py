@@ -7,10 +7,13 @@ from telegram_client import client  # تأكد من استيراد العميل 
 
 async def extract_wait_time(message_text, default_wait):
     """
-    دالة لاستخراج وقت الانتظار من نص الرسالة بطريقة جديدة.
+    دالة لاستخراج وقت الانتظار من نص الرسالة.
+    
+    :param message_text: النص الذي يحتوي على وقت الانتظار.
+    :param default_wait: القيمة الافتراضية لوقت الانتظار.
+    :return: وقت الانتظار بالثواني.
     """
     try:
-        # تحويل النص إلى حروف صغيرة لتسهيل البحث
         message_text = message_text.lower()
 
         # البحث عن الأرقام المرتبطة بالكلمات الرئيسية
@@ -24,11 +27,11 @@ async def extract_wait_time(message_text, default_wait):
         seconds = int(seconds_match.group(1)) if seconds_match else 0
 
         # حساب وقت الانتظار الكلي بالثواني
-        wait_time = hours * 3600 + minutes * 60 + seconds + 60
+        wait_time = hours * 3600 + minutes * 60 + seconds + 60  # إضافة 60 ثانية كهامش أمان
 
         # إذا لم يتم العثور على أي وقت، نستخدم القيمة الافتراضية
         if wait_time == 0:
-            return int(default_wait + 60)
+            return int(default_wait)
 
         return wait_time
 
@@ -36,13 +39,19 @@ async def extract_wait_time(message_text, default_wait):
         logging.error(f"حدث خطأ أثناء استخراج وقت الانتظار: {e}")
         return int(default_wait)
 
-async def handle_bot(bot_url, message, button_text, default_wait):
+async def handle_bot(bot_url, message, button_text, default_wait, wait_text):
     """
     دالة غير تزامنية للتعامل مع البوت عبر الرابط.
+    
+    :param bot_url: رابط البوت.
+    :param message: الرسالة المراد إرسالها.
+    :param button_text: النص الموجود على الزر المطلوب النقر عليه.
+    :param default_wait: وقت الانتظار الافتراضي إذا لم يتم تحديده في الرسالة.
+    :param wait_text: النص المطلوب البحث عنه لاستخراج المهلة.
     """
     bot_username = bot_url.split("/")[-1]  # استخراج اسم البوت من الرابط
     
-    while True:  # إضافة حلقة لتكرار العملية
+    while True:  # حلقة لتكرار العملية
         try:
             # إرسال الرسالة
             await client.send_message(bot_username, message)
@@ -72,9 +81,9 @@ async def handle_bot(bot_url, message, button_text, default_wait):
                                     ))
                                     logging.info(f"تم النقر على الزر '{button.text}' في البوت {bot_url}.")
                                 except Exception as e:
-                                    pass
-                        button_clicked = True
-                        break
+                                    logging.error(f"فشل في النقر على الزر: {e}")
+                            button_clicked = True
+                            break
                     if button_clicked:
                         break
 
@@ -91,8 +100,11 @@ async def handle_bot(bot_url, message, button_text, default_wait):
 
             last_message = messages[0]
 
-            # استخراج وقت الانتظار من الرسالة باستخدام الدالة المحدثة
-            wait_time = await extract_wait_time(last_message.text, default_wait)
+            # استخراج وقت الانتظار من النص المحدد
+            if wait_text in last_message.text:
+                wait_time = await extract_wait_time(last_message.text.split(wait_text)[-1], default_wait)
+            else:
+                wait_time = int(default_wait)  # استخدام القيمة الافتراضية إذا لم يتم العثور على النص
 
             # سجل العملية
             logging.info(f"تقرير البوت {bot_url}: المهلة المعينة = {wait_time} ثانية.")
