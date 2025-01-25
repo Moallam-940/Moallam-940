@@ -27,7 +27,7 @@ async def main():
 
     # (رابط البوت، الرسالة المطلوب ارسالها، النص المطلوب البحث عنه في الزر، المهلة الافتراضية، النص المطلوب استخراج المهلة منه)
     bots = [
-        ("https://t.me/DailyUSDTClaimBot", "🆔 Account Balance", "🔥 Huge Extra Bonus 🔥", "3600", "Your next available bonus is after"),
+        
         ("https://t.me/BitcoinBTCCloudPoolBot", "Get Coin 🎁", "🎁 Daily Bonus 🎁", "3600", "Your next available bonus is after"),
         ("https://t.me/DOGSMININGPROBOT", "FREE BONUS 🐶", "⌚ Hourly Bonus", "3600", "Your next available bonus is after"),
         ("https://t.me/USDTMintMasterProV2Bot", "⥴ Extra Bonus", "⌚ Hourly Bonus", "3600", "Your next available bonus is after"),
